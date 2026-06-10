@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>บันทึกการตรวจสอบระบบแก๊สทางการแพทย์</title>
+<meta name="description" content="ระบบบันทึกการตรวจสอบระบบแก๊สทางการแพทย์ - Medical Gas Inspection System">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<!-- ต้องเปิดผ่าน HTTP server เท่านั้น (localhost หรือ GitHub Pages) ไม่ใช่ file:// -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -381,7 +385,37 @@ tr:hover td{background:#f6faff}
           <h3>📊 สถิติฐานข้อมูล</h3>
           <div id="adm-stats" style="color:var(--muted);font-size:13px">กำลังโหลด…</div>
         </div>
+
         <div class="admc">
+          <h3>⚡ SQL Index — เพิ่มความเร็ว</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">คัดลอก SQL ไปรันใน <a href="https://supabase.com/dashboard/project/ounsxkmbzoojypwzzaan/sql" target="_blank" style="color:var(--blue)">Supabase SQL Editor</a></p>
+          <pre id="idx-sql" style="background:var(--bg3);padding:12px;border-radius:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;cursor:pointer;line-height:1.6" onclick="copyIdx()" title="คลิกเพื่อคัดลอก">CREATE INDEX IF NOT EXISTS idx_ir_sys_date
+  ON inspection_records(system_type, recorded_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_ir_status
+  ON inspection_records(status);
+
+CREATE INDEX IF NOT EXISTS idx_ir_building
+  ON inspection_records(system_type, building);
+
+CREATE INDEX IF NOT EXISTS idx_ir_sys_status
+  ON inspection_records(system_type, status)
+  WHERE status = 'alert';</pre>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+            <button class="btn btn-o btn-sm" onclick="copyIdx()">📋 คัดลอก SQL</button>
+            <span id="idx-copied" style="font-size:11px;color:var(--green);display:none">✅ คัดลอกแล้ว!</span>
+          </div>
+        </div>
+                <div class="admc">
+          <h3>🏓 ทดสอบการเชื่อมต่อ</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">กดเพื่อตรวจสอบว่า Supabase ยังเชื่อมต่อได้และวัด latency</p>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn btn-o btn-sm" onclick="pingDB()">🏓 Ping ฐานข้อมูล</button>
+            <span id="ping-status" style="font-size:11px;color:var(--muted)">—</span>
+          </div>
+          <p style="font-size:11px;color:var(--muted);margin-top:8px">💡 ระบบ auto-ping ทุก 6 ชั่วโมงอยู่แล้ว ป้องกัน Supabase Free Tier pause</p>
+        </div>
+<div class="admc">
           <h3>🗃️ Archive ข้อมูลเก่า</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">ย้ายข้อมูลที่เกินกำหนดไปยังตาราง archive</p>
           <div style="display:flex;gap:8px;align-items:center">
@@ -640,12 +674,27 @@ async function fetchCount(sys,bld,fromV,toV,stVal){
 }
 
 async function fetchAll(sys,bld,fromV,toV,stVal){
+  // ดึงทีละ 1,000 แถว วนซ้ำจนครบ ไม่ timeout
   const p=buildFilterParams(sys,bld,fromV,toV,stVal);
-  let url=SUPA+'/rest/v1/inspection_records?'+paramsToURL(p);
-  url+='&order=recorded_at.desc&limit=10000';
-  const r=await fetch(url,{headers:{...H,'Prefer':'return=representation'}});
-  if(!r.ok) throw new Error('HTTP '+r.status);
-  return r.json();
+  const baseUrl=SUPA+'/rest/v1/inspection_records?'+paramsToURL(p)+'&order=recorded_at.desc';
+  const CHUNK=1000;
+  let all=[], offset=0, done=false;
+  while(!done){
+    const url=baseUrl+'&limit='+CHUNK+'&offset='+offset;
+    const r=await fetch(url,{headers:{...H,'Prefer':'return=representation'}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const batch=await r.json();
+    if(!batch||!batch.length){ done=true; break; }
+    all=[...all,...batch];
+    if(batch.length<CHUNK) done=true;
+    else offset+=CHUNK;
+    if(all.length>=50000){
+      done=true;
+      toast('Export จำกัดที่ 50,000 แถว — ใช้ filter วันที่เพื่อแบ่ง','if');
+      break;
+    }
+  }
+  return all;
 }
 
 // ════════════════════════════════════════════════════════
@@ -721,12 +770,24 @@ function refresh(){
 //  INIT
 // ════════════════════════════════════════════════════════
 async function init(){
+  // ตรวจสอบ file:// protocol
+  if(location.protocol==='file:'){
+    document.getElementById('cdot').className='cdot off';
+    document.getElementById('ctxt').textContent='⚠️ ต้องเปิดผ่าน HTTP Server';
+    showFileProtocolWarning();
+    return;
+  }
   try{
-    const r=await fetch(SUPA+'/rest/v1/system_types?limit=1',{headers:H});
-    const ok=r.ok||r.status===404; // 404 = table not exist but connected
+    const r=await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:H});
+    const ok=r.ok;
     document.getElementById('cdot').className='cdot'+(ok?'':' off');
-    document.getElementById('ctxt').textContent=ok?'เชื่อมต่อแล้ว':'ออฟไลน์';
-  }catch{ document.getElementById('cdot').className='cdot off'; }
+    document.getElementById('ctxt').textContent=ok?'เชื่อมต่อแล้ว':'เชื่อมต่อไม่ได้';
+    if(!ok){ toast('เชื่อมต่อ Supabase ไม่ได้ — ตรวจสอบ RLS Policy','er'); }
+  }catch(e){
+    document.getElementById('cdot').className='cdot off';
+    document.getElementById('ctxt').textContent='ออฟไลน์';
+    toast('เชื่อมต่อไม่ได้: '+e.message,'er');
+  }
 
   // URL routing (QR link)
   const p=new URLSearchParams(location.search);
@@ -1389,16 +1450,43 @@ async function saveEdit(){
 // ════════════════════════════════════════════════════════
 async function loadAdminStats(){
   try{
-    const r=await fetch(SUPA+'/rest/v1/inspection_records',{method:'HEAD',headers:{...H,'Prefer':'count=exact'}});
-    const cr=r.headers.get('content-range');
-    let tot=0; if(cr){ const m=cr.match(/\/(\d+)$/); if(m) tot=parseInt(m[1]); }
+    const sysKeys=Object.keys(SYS);
+    const results=await Promise.all([
+      fetch(SUPA+'/rest/v1/inspection_records',{method:'HEAD',headers:{...H,'Prefer':'count=exact'}}),
+      ...sysKeys.map(sk=>fetch(SUPA+'/rest/v1/inspection_records?system_type=eq.'+encodeURIComponent(sk),{method:'HEAD',headers:{...H,'Prefer':'count=exact'}}))
+    ]);
+    const gc=r=>{ const cr=r.headers.get('content-range'); if(cr){const m=cr.match(/\/([\d]+)$/);if(m)return parseInt(m[1]);}return 0; };
+    const tot=gc(results[0]);
+    const sysCounts=sysKeys.map((k,i)=>({k,l:SYS[k].l,ic:SYS[k].ic,n:gc(results[i+1])}));
+    const estMonths=Math.max(1,Math.round(tot/800));
+
     document.getElementById('adm-stats').innerHTML=`
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;font-size:12px">
-        <div>รายการทั้งหมด: <b>${tot.toLocaleString()} แถว</b></div>
-        <div>Supabase Project: <b>ounsxkmbzoojypwzzaan</b></div>
-        <div>Version: <b>3.0.0</b></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:14px">
+        <div style="background:var(--blue-lt);border-radius:6px;padding:10px">
+          <div style="font-size:10px;color:var(--muted)">รายการทั้งหมด</div>
+          <div style="font-size:22px;font-weight:700;color:var(--blue)">${tot.toLocaleString()}</div>
+        </div>
+        <div style="background:var(--green-lt);border-radius:6px;padding:10px">
+          <div style="font-size:10px;color:var(--muted)">ประมาณ (800/เดือน)</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green)">${estMonths} เดือน</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:10px">
+          <div style="font-size:10px;color:var(--muted)">Project</div>
+          <div style="font-size:11px;font-weight:600">ounsxkmbzoojypwzzaan</div>
+          <div style="font-size:10px;color:var(--muted)">Version 3.0</div>
+        </div>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:8px">แยกตามระบบ</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px">
+        ${sysCounts.map(s=>`<div style="background:var(--bg3);border-radius:6px;padding:8px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">${s.ic}</span>
+          <div><div style="font-size:11px;font-weight:600">${s.l}</div>
+          <div style="font-size:13px;color:var(--blue);font-weight:700">${s.n.toLocaleString()}</div></div>
+        </div>`).join('')}
       </div>`;
-  }catch(e){ document.getElementById('adm-stats').innerHTML='ไม่สามารถโหลดได้: '+e.message; }
+  }catch(e){
+    document.getElementById('adm-stats').innerHTML='<span style="color:var(--red)">โหลดล้มเหลว: '+e.message+'</span>';
+  }
 }
 
 function chgPin(){
@@ -1464,6 +1552,95 @@ function toast(msg,type='if'){
   document.getElementById('toasts').appendChild(el);
   setTimeout(()=>el.remove(),3200);
 }
+
+// ════════════════════════════════════════════════════════
+//  FILE PROTOCOL WARNING
+// ════════════════════════════════════════════════════════
+function showFileProtocolWarning(){
+  // แสดง overlay แนะนำวิธีเปิดที่ถูกต้อง
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(15,30,50,.85);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,sans-serif';
+  ov.innerHTML=`<div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-size:36px;text-align:center;margin-bottom:12px">⚠️</div>
+    <h2 style="font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;color:#1a2332">ไม่สามารถเปิดจาก File ตรงได้</h2>
+    <p style="font-size:13px;color:#6b7f96;text-align:center;margin-bottom:20px">Browser บล็อกการเชื่อมต่อ Supabase เมื่อเปิดจาก <code>file://</code></p>
+    <div style="background:#f0f4f8;border-radius:10px;padding:16px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:#1a2332;margin-bottom:12px">✅ วิธีเปิดที่ถูกต้อง (เลือก 1 วิธี)</div>
+      
+      <div style="margin-bottom:12px;padding:12px;background:#fff;border-radius:8px;border:1px solid #d1dce8">
+        <div style="font-size:12px;font-weight:700;color:#1a6fbd;margin-bottom:4px">🥇 วิธีที่ 1 — VS Code + Live Server (แนะนำ)</div>
+        <div style="font-size:11px;color:#6b7f96">1. ติดตั้ง VS Code → ติดตั้ง Extension "Live Server"<br>
+        2. คลิกขวาที่ไฟล์ gasmed.html → "Open with Live Server"<br>
+        3. จะเปิดที่ http://127.0.0.1:5500/gasmed.html</div>
+      </div>
+
+      <div style="margin-bottom:12px;padding:12px;background:#fff;border-radius:8px;border:1px solid #d1dce8">
+        <div style="font-size:12px;font-weight:700;color:#0f7b3e;margin-bottom:4px">🥈 วิธีที่ 2 — Python HTTP Server</div>
+        <div style="font-size:11px;color:#6b7f96">เปิด CMD ในโฟลเดอร์ที่มีไฟล์ แล้วรัน:<br>
+        <code style="background:#f0f4f8;padding:2px 6px;border-radius:4px;font-size:11px">python -m http.server 8080</code><br>
+        แล้วเปิด: http://localhost:8080/gasmed.html</div>
+      </div>
+
+      <div style="padding:12px;background:#fff;border-radius:8px;border:1px solid #d1dce8">
+        <div style="font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:4px">🥉 วิธีที่ 3 — GitHub Pages (ถาวร)</div>
+        <div style="font-size:11px;color:#6b7f96">อัปโหลดไฟล์ขึ้น GitHub repository<br>
+        เปิด Settings → Pages → เลือก branch main<br>
+        ได้ URL: https://username.github.io/repo/gasmed.html</div>
+      </div>
+    </div>
+    <button onclick="this.closest('div[style]').remove()" 
+      style="width:100%;padding:12px;background:#1a6fbd;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">
+      เข้าใจแล้ว (ยังคงใช้งานไม่ได้จนกว่าจะเปิดผ่าน HTTP)
+    </button>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+
+// ════════════════════════════════════════════════════════
+//  UTILITY — Ping, Index Copy, Auto-ping
+// ════════════════════════════════════════════════════════
+async function pingDB(){
+  const el=document.getElementById('ping-status');
+  if(el){ el.textContent='กำลัง ping…'; el.style.color='var(--muted)'; }
+  try{
+    const t0=Date.now();
+    const r=await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:H});
+    const ms=Date.now()-t0;
+    if(r.ok){
+      if(el){ el.textContent='✅ เชื่อมต่อสำเร็จ ('+ms+'ms) — '+new Date().toLocaleTimeString('th-TH'); el.style.color='var(--green)'; }
+      toast('Ping สำเร็จ ('+ms+'ms)','ok');
+    } else {
+      if(el){ el.textContent='❌ HTTP '+r.status; el.style.color='var(--red)'; }
+    }
+  }catch(e){
+    if(el){ el.textContent='❌ '+e.message; el.style.color='var(--red)'; }
+  }
+}
+
+function copyIdx(){
+  const sql=`CREATE INDEX IF NOT EXISTS idx_ir_sys_date
+  ON inspection_records(system_type, recorded_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_ir_status
+  ON inspection_records(status);
+
+CREATE INDEX IF NOT EXISTS idx_ir_building
+  ON inspection_records(system_type, building);
+
+CREATE INDEX IF NOT EXISTS idx_ir_sys_status
+  ON inspection_records(system_type, status)
+  WHERE status = 'alert';`;
+  navigator.clipboard.writeText(sql);
+  const el=document.getElementById('idx-copied');
+  if(el){ el.style.display='inline'; setTimeout(()=>el.style.display='none',2000); }
+  toast('คัดลอก SQL แล้ว','ok');
+}
+
+// Auto-ping ทุก 6 ชั่วโมง ป้องกัน Supabase Free Tier pause
+setInterval(async ()=>{
+  try{ await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:H}); }catch(e){}
+}, 6*3600*1000);
 
 // ════════════════════════════════════════════════════════
 //  BOOT
