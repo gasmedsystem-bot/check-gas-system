@@ -158,7 +158,7 @@ tr:hover td{background:#f6faff}
 .bc{border:1.5px solid var(--border);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:.12s;background:var(--card)}
 .bc:hover{border-color:var(--blue)}
 .bc.on{background:var(--blue-lt);border-color:var(--blue)}
-.bc .bn{font-size:12px;font-weight:600;white-space:normal;word-break:break-word;line-height:1.35}
+.bc .bn{font-size:12px;font-weight:600}
 .bc .bp{font-size:10px;color:var(--muted);margin-top:2px}
 .bc.on .bn{color:var(--blue)}
 
@@ -216,89 +216,38 @@ tr:hover td{background:#f6faff}
 .admc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:12px}
 .admc h3{font-size:13px;font-weight:700;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--bg3)}
 
-/* ── MOBILE HAMBURGER (ซ่อนบน desktop) ── */
-#mob-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;font-size:18px;color:var(--text);line-height:1;flex-shrink:0}
-#mob-menu-btn:hover{background:var(--bg3)}
-#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:998;-webkit-tap-highlight-color:transparent}
+/* Admin Management Lists */
+.gm-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:260px;overflow-y:auto}
+.gm-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)}
+.gm-item.inactive{opacity:.45}
+.gm-item .gm-name{flex:1;font-size:13px}
+.gm-item .gm-sys{font-size:10px;color:var(--muted);margin-left:4px}
+.gm-btn{padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:11px;font-family:'Sarabun',sans-serif;transition:.1s}
+.gm-btn:hover{background:var(--bg3)}
+.gm-btn.d{color:var(--red);border-color:var(--red)}
+.gm-btn.d:hover{background:var(--red-lt)}
+.gm-btn.t{color:var(--muted)}
+.gm-add-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.gm-add-row select,.gm-add-row input{flex:1;min-width:120px}
+.gm-empty{text-align:center;color:var(--muted);font-size:12px;padding:16px 0}
 
-/* ── RESPONSIVE ≤ 768px ── */
-@media(max-width:768px){
-
-  /* hamburger visible */
-  #mob-menu-btn{display:flex;align-items:center;justify-content:center}
-
-  /* sidebar: hidden off-screen by default, slide in as overlay */
-  .sb{
-    position:fixed;top:0;left:0;height:100%;z-index:999;
-    transform:translateX(-100%);transition:transform .22s ease;
-    width:220px;
-  }
-  .sb.mob-open{transform:translateX(0)}
-  #sb-overlay.mob-open{display:block}
-
-  /* main wrapper takes full width */
-  .mw{width:100%;min-width:0}
-
-  /* topbar: tighter, hide status text on very small */
-  .topbar{padding:0 10px;gap:8px}
-  .tb-title{font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ctxt{display:none}
-
-  /* tabs: scrollable horizontally */
-  .tabs{padding:0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab{padding:10px 12px;font-size:12px;flex-shrink:0}
-
-  /* content: less padding */
-  .content{padding:10px 10px}
-
-  /* filter bar: inputs full row */
-  .fbar{gap:6px;padding:8px 10px}
-  .fbar select,.fbar input[type=date]{width:100%;max-width:none}
-  .fbar label{width:100%;margin-top:2px}
-
-  /* form table: stack label on top of value */
-  .form-tbl .fl{display:block;width:100%;padding:8px 12px 2px;white-space:normal}
-  .form-tbl .fv{display:block;width:100%;padding:4px 12px 10px}
-  .form-tbl tr{display:block;border-bottom:1px solid var(--bg3)}
-  .form-tbl tr:last-child{border-bottom:none}
-
-  /* input max-width: full on mobile */
-  .uw{max-width:100%}
-  .fc{font-size:14px}/* slightly bigger tap target */
-
-  /* building grid: 1 column on very small screens */
-  .bld-g{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
-
-  /* charts: already 1-col at 860px; ensure on mobile too */
-  .cgrd{grid-template-columns:1fr}
-
-  /* stat cards: 2 columns min on mobile */
-  .cards{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
-
-  /* sys-grid: 1 col */
-  .sys-grid{grid-template-columns:1fr}
-
-  /* modal: full-width on mobile */
-  .modal{width:96%;max-height:88vh}
-
-  /* PIN modal: fits small screens */
-  .pmod{width:280px;padding:20px 16px}
-
-  /* export buttons wrap properly */
-  .fbar>div[style*="margin-left:auto"]{margin-left:0!important;width:100%;justify-content:flex-start}
-
-  /* toast: left-right margin */
-  #toasts{left:10px;right:10px;bottom:10px}
-  .toast{max-width:100%}
-}
-
-/* ── RESPONSIVE ≤ 400px (very small phones) ── */
-@media(max-width:400px){
-  .cards{grid-template-columns:1fr 1fr}
-  .pmod{width:92vw}
-  .tab{padding:9px 10px;font-size:11px}
-}
+/* ── LOGIN SCREEN ── */
+#login-screen{position:fixed;inset:0;z-index:20000;background:linear-gradient(135deg,#0f1e32 0%,#1a3a5c 60%,#0d2540 100%);display:flex;align-items:center;justify-content:center;font-family:'Sarabun',sans-serif}
+#login-screen.h{display:none}
+.ls-card{background:#fff;border-radius:18px;padding:36px 32px 28px;width:340px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:ls-in .22s ease}
+@keyframes ls-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ls-logo{font-size:38px;margin-bottom:6px}
+.ls-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:2px}
+.ls-sub{font-size:11px;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.ls-field{margin-bottom:14px;text-align:left}
+.ls-field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.ls-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif;color:var(--text);background:var(--bg3);outline:none;transition:.12s}
+.ls-input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(26,111,189,.1)}
+.ls-btn{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;transition:.12s;margin-top:4px}
+.ls-btn:hover{background:var(--blue2)}
+.ls-btn:disabled{opacity:.5;cursor:not-allowed}
+.ls-err{min-height:18px;font-size:12px;color:var(--red);font-weight:600;margin-top:10px;text-align:center}
+.ls-version{font-size:10px;color:var(--muted);margin-top:16px;opacity:.7}
 </style>
 </head>
 <body>
@@ -336,12 +285,33 @@ tr:hover td{background:#f6faff}
   </div>
 </div>
 
-<div id="app">
-  <!-- Mobile sidebar overlay (ทำงานเฉพาะมือถือ) -->
-  <div id="sb-overlay" onclick="closeSb()"></div>
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+  <div class="ls-card">
+    <div class="ls-logo">⚕</div>
+    <div class="ls-title">GasMed</div>
+    <div class="ls-sub">บันทึกการตรวจสอบ<br>ระบบแก๊สทางการแพทย์</div>
+    <div class="ls-field">
+      <label for="ls-email">อีเมล</label>
+      <input class="ls-input" id="ls-email" type="email" placeholder="email@hospital.th"
+        autocomplete="email" autocapitalize="none" spellcheck="false"
+        onkeydown="if(event.key==='Enter')document.getElementById('ls-pass').focus()">
+    </div>
+    <div class="ls-field">
+      <label for="ls-pass">รหัสผ่าน</label>
+      <input class="ls-input" id="ls-pass" type="password" placeholder="••••••••"
+        autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="ls-btn" id="ls-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="ls-err" id="ls-err"></div>
+    <div class="ls-version">GasMed v3.0 · Medical Gas Inspection System</div>
+  </div>
+</div>
 
+<div id="app" style="display:none">
   <!-- SIDEBAR -->
-  <div class="sb" id="sidebar">
+  <div class="sb">
     <div class="sb-logo">
       <div class="t">⚕ GasMed</div>
       <div class="s">บันทึกการตรวจสอบ<br>ระบบแก๊สทางการแพทย์</div>
@@ -365,12 +335,13 @@ tr:hover td{background:#f6faff}
 
   <div class="mw">
     <div class="topbar">
-      <button id="mob-menu-btn" onclick="openSb()" title="เมนู" aria-label="เปิดเมนู">☰</button>
       <div class="tb-title" id="tb-title">Dashboard</div>
       <div class="tb-right">
         <div class="cdot" id="cdot"></div>
         <span class="ctxt" id="ctxt">กำลังเชื่อมต่อ…</span>
+        <span class="ctxt" id="tb-user" style="color:var(--blue);font-weight:600"></span>
         <button class="btn btn-o btn-sm" onclick="refresh()" title="รีเฟรช">🔄 รีเฟรช</button>
+        <button class="btn btn-o btn-sm" onclick="doLogout()" style="color:var(--red);border-color:var(--red)" title="ออกจากระบบ">🚪 ออก</button>
       </div>
     </div>
 
@@ -512,6 +483,60 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
             <button class="btn btn-d btn-sm" onclick="runArchive()">🗃 Archive</button>
           </div>
         </div>
+
+        <!-- ── ผู้ตรวจสอบ ── -->
+        <div class="admc">
+          <h3>👤 จัดการรายชื่อผู้ตรวจสอบ</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">รายชื่อที่เพิ่มจะแสดงเป็น dropdown ให้เลือกในหน้าบันทึก (ยังพิมพ์เองได้)</p>
+          <div class="gm-list" id="gm-insp-list"><div class="gm-empty">กำลังโหลด…</div></div>
+          <div class="gm-add-row">
+            <input type="text" class="fc" id="gm-insp-input" placeholder="ชื่อผู้ตรวจสอบ" maxlength="60" style="max-width:280px"
+              onkeydown="if(event.key==='Enter')gmAddInspector()">
+            <button class="btn btn-p btn-sm" onclick="gmAddInspector()">+ เพิ่ม</button>
+          </div>
+        </div>
+
+        <!-- ── อาคาร/ถัง ── -->
+        <div class="admc">
+          <h3>🏢 จัดการอาคาร/ถัง</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+            เพิ่มอาคารใหม่ในแต่ละระบบ — อาคารที่ปิดจะไม่แสดงในหน้าบันทึก<br>
+            <span style="color:var(--red);font-weight:600">⚠️ อย่าแก้ชื่ออาคารที่มีข้อมูลเก่าอยู่แล้ว — filter จะไม่ตรง</span>
+          </p>
+          <div class="gm-add-row" style="margin-bottom:10px">
+            <select class="fc" id="gm-bld-sys" style="max-width:180px">
+              <option value="">-- เลือกระบบ --</option>
+              <option value="o2_manifold">O2 Manifold</option>
+              <option value="nitrogen">Nitrogen Manifold</option>
+              <option value="nitrous_oxide">Nitrous Oxide Manifold</option>
+              <option value="co2">CO₂ Manifold</option>
+              <option value="medical_air">Medical Air</option>
+              <option value="vacuum">Medical Vacuum</option>
+              <option value="wagd">WAGD</option>
+              <option value="liquid_o2">Liquid O2</option>
+              <option value="area_alarm">Area Alarm</option>
+            </select>
+            <input type="text" class="fc" id="gm-bld-input" placeholder="ชื่ออาคาร/ถัง" maxlength="80" style="max-width:240px"
+              onkeydown="if(event.key==='Enter')gmAddBuilding()">
+            <button class="btn btn-p btn-sm" onclick="gmAddBuilding()">+ เพิ่ม</button>
+          </div>
+          <div class="gm-list" id="gm-bld-list"><div class="gm-empty">กำลังโหลด…</div></div>
+        </div>
+
+        <!-- ── ชั้น/แผนก Area Alarm ── -->
+        <div class="admc">
+          <h3>🚨 จัดการชั้น/แผนก Area Alarm</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">เพิ่ม/ปิด/ลบ ชั้นและแผนกในแต่ละอาคาร Area Alarm</p>
+          <div class="gm-add-row" style="margin-bottom:10px">
+            <select class="fc" id="gm-fl-bld" onchange="gmLoadFloors()" style="max-width:220px">
+              <option value="">-- เลือกอาคาร --</option>
+            </select>
+            <input type="text" class="fc" id="gm-fl-input" placeholder="ชื่อชั้น/หอผู้ป่วย/แผนก" maxlength="80" style="max-width:240px"
+              onkeydown="if(event.key==='Enter')gmAddFloor()">
+            <button class="btn btn-p btn-sm" onclick="gmAddFloor()">+ เพิ่ม</button>
+          </div>
+          <div class="gm-list" id="gm-fl-list"><div class="gm-empty">เลือกอาคารก่อน</div></div>
+        </div>
       </div>
 
       <!-- QR/Share -->
@@ -540,10 +565,22 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
 // ════════════════════════════════════════════════════════
 const SUPA   = 'https://ounsxkmbzoojypwzzaan.supabase.co';
 const AKEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91bnN4a21iem9vanlwd3p6YWFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3OTc0MjQsImV4cCI6MjA5NjM3MzQyNH0.ckg7zsI9yfnuALwhge6OTc0twHm4EoyY-g6pLrIKgCU';
-const H      = {'apikey':AKEY,'Authorization':'Bearer '+AKEY,'Content-Type':'application/json'};
 const PIN_K  = 'gm_pin';
 const SES_K  = 'gm_ses';
 const getPin = ()=> localStorage.getItem(PIN_K)||'4321';
+
+// JWT_K เก็บ Supabase access token (แยกจาก SES_K ที่ใช้กับ PIN session)
+const JWT_K  = 'gm_jwt';
+const REF_K  = 'gm_ref';
+const EXP_K  = 'gm_exp';
+
+// getH() — คืน header ที่ใช้ JWT token ล่าสุดเสมอ
+function getH(extra){
+  const tok = sessionStorage.getItem(JWT_K) || AKEY;
+  return {'apikey':AKEY,'Authorization':'Bearer '+tok,'Content-Type':'application/json',...(extra||{})};
+}
+// H ใช้เป็น shorthand — อัพเดทหลัง login ทุกครั้ง
+let H = getH();
 
 // ════════════════════════════════════════════════════════
 //  SYSTEM DEFINITIONS (Single source of truth)
@@ -603,8 +640,8 @@ const TH = {
   },
   liquid_o2:{
     '*':{ volume:{mn:null,mx:null,h:'เลือกถังก่อน'}, pressure_tank:{mn:null,mx:null,h:'เลือกถังก่อน'}, reg_from_tank:{mn:null,mx:null,h:'เลือกถังก่อน'}, reg_working:{mn:50,mx:60,h:'50–60 PSI'} },
-    'อาคารบริการ Tank No.255':{ volume:{mn:45,mx:160,h:'45–160 InH₂O'}, pressure_tank:{mn:180,mx:250,h:'180–250 PSI'}, reg_from_tank:{mn:180,mx:250,h:'180–250 PSI'} },
-    'อาคารโภชนบำบัด Tank No.774':{ volume:{mn:65,mx:225,h:'65–225 InH₂O'}, pressure_tank:{mn:130,mx:250,h:'130–250 PSI'}, reg_from_tank:{mn:130,mx:250,h:'130–250 PSI'} },
+    'อาคารบริการ Tank No.255':{ volume:{mn:45,mx:160,h:'45–160 Inches H₂O'}, pressure_tank:{mn:180,mx:250,h:'180–250 PSI'}, reg_from_tank:{mn:180,mx:250,h:'180–250 PSI'} },
+    'อาคารโภชนบำบัด Tank No.774':{ volume:{mn:65,mx:225,h:'65–225 Inches H₂O'}, pressure_tank:{mn:130,mx:250,h:'130–250 PSI'}, reg_from_tank:{mn:130,mx:250,h:'130–250 PSI'} },
   },
   area_alarm:{},
 };
@@ -615,7 +652,7 @@ const FIELDS = {
   medical_air:   [{k:'storage_pressure',l:'แรงดันเก็บ (Storage Pressure)',t:'n',u:'PSI'},{k:'working_pressure',l:'แรงดันใช้งาน (Working Pressure)',t:'n',u:'PSI'},{k:'motor_condition',l:'Motor Condition',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'control_panel',l:'ตู้ Control',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'air_dryer_1',l:'Air Dryer 1',t:'tgl',o:['ปกติ','ไม่ปกติ','ปิดสลับ']},{k:'air_dryer_2',l:'Air Dryer 2',t:'tgl',o:['ปกติ','ไม่ปกติ','ปิดสลับ']},{k:'auto_drain',l:'Auto Drain',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'room_temp',l:'อุณหภูมิห้อง',t:'n',u:'°C'},{k:'cleanliness',l:'ความสะอาด',t:'tgl',o:['สะอาด','ไม่สะอาด']}],
   vacuum:        [{k:'pressure',l:'Pressure ในถัง',t:'n',u:''},{k:'motor_condition',l:'Motor Condition',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'control_panel',l:'ตู้ Control',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'oil_level',l:'Oil Level',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'room_temp',l:'อุณหภูมิห้อง',t:'n',u:'°C'},{k:'cleanliness',l:'ความสะอาด',t:'tgl',o:['สะอาด','ไม่สะอาด']}],
   wagd:          [{k:'pressure',l:'Pressure ในถัง',t:'n',u:'inHg'},{k:'motor_condition',l:'Motor Condition',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'control_panel',l:'ตู้ Control',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'oil_level',l:'Oil Level',t:'tgl',o:['ปกติ','ไม่ปกติ']},{k:'room_temp',l:'อุณหภูมิห้อง',t:'n',u:'°C'},{k:'cleanliness',l:'ความสะอาด',t:'tgl',o:['สะอาด','ไม่สะอาด']}],
-  liquid_o2:     [{k:'volume',l:'ปริมาตร O2 เหลว',t:'n',u:'InH₂O'},{k:'pressure_tank',l:'แรงดันในถัง',t:'n',u:'PSI'},{k:'reg_from_tank',l:'REGULATOR จากถัง',t:'n',u:'PSI'},{k:'reg_working',l:'REGULATOR ใช้งาน',t:'n',u:'PSI'},{k:'vaporizer',l:'ชุด Vapolizer',t:'tgl',o:['ปกติ','ไม่ปกติ','สลับVapolizer']}],
+  liquid_o2:     [{k:'volume',l:'ปริมาตร O2 เหลว',t:'n',u:'%'},{k:'pressure_tank',l:'แรงดันในถัง',t:'n',u:'PSI'},{k:'reg_from_tank',l:'REGULATOR จากถัง',t:'n',u:'PSI'},{k:'reg_working',l:'REGULATOR ใช้งาน',t:'n',u:'PSI'},{k:'vaporizer',l:'ชุด Vapolizer',t:'tgl',o:['ปกติ','ไม่ปกติ','สลับVapolizer']}],
   area_alarm:    [{k:'floor_location',l:'ชั้น/หอผู้ป่วย/แผนก',t:'afloor'},{k:'sound',l:'เสียง (≥80dB)',t:'tgl',o:['ปกติ','ผิดปกติ','ไม่มีเสียง','ปิดตึก','ปิดรอซ่อม','ปิดชำรุด']},{k:'light',l:'ไฟแสดงสถานะ',t:'tgl',o:['ปกติ','ผิดปกติ','ปิดตึก','ปิดรอซ่อม','ปิดชำรุด']},{k:'display',l:'ตัวเลขแสดงผล',t:'tgl',o:['ปกติ','ผิดปกติ','ปิดตึก','ปิดรอซ่อม','ปิดชำรุด']}],
 };
 FIELDS.nitrogen      = FIELDS.o2_manifold;
@@ -638,7 +675,7 @@ const COLS = {
   medical_air:   ['วันที่-เวลา','อาคาร','Storage(PSI)','Working(PSI)','มอเตอร์','ตู้Control','Dryer1','Dryer2','AutoDrain','อุณหภูมิ(°C)','ความสะอาด','สถานะ','ผู้ตรวจ',''],
   vacuum:        ['วันที่-เวลา','อาคาร','แรงดัน','มอเตอร์','ตู้Control','OilLevel','อุณหภูมิ(°C)','ความสะอาด','สถานะ','ผู้ตรวจ',''],
   wagd:          ['วันที่-เวลา','อาคาร','แรงดัน(inHg)','มอเตอร์','ตู้Control','OilLevel','อุณหภูมิ(°C)','ความสะอาด','สถานะ','ผู้ตรวจ',''],
-  liquid_o2:     ['วันที่-เวลา','อาคาร/ถัง','ปริมาตร(InH₂O)','แรงดันถัง(PSI)','Reg จากถัง(PSI)','Reg ใช้งาน(PSI)','Vaporizer','สถานะ','ผู้ตรวจ',''],
+  liquid_o2:     ['วันที่-เวลา','อาคาร/ถัง','ปริมาตร','แรงดันถัง(PSI)','Reg จากถัง(PSI)','Reg ใช้งาน(PSI)','Vaporizer','สถานะ','ผู้ตรวจ',''],
   area_alarm:    ['วันที่-เวลา','อาคาร','ชั้น/หอผู้ป่วย','เสียง','ไฟ','ตัวเลข','สถานะ','ผู้ตรวจ',''],
 };
 COLS.nitrogen=COLS.nitrous_oxide=COLS.co2=COLS.o2_manifold;
@@ -650,6 +687,12 @@ let curSys=null, curTab='dash', dtPage=1, lastRows=[], charts={};
 let editId=null, editSys=null;
 let fBld='';
 const PER=50;
+
+// ── GM Management Cache (โหลดจาก Supabase ครั้งเดียวต่อ session) ──
+let gmInspectors=[];   // [{id,name,active}]
+let gmBuildings=[];    // [{id,system_type,name,active}]
+let gmFloors=[];       // [{id,building,floor_name,active}]
+let gmLoaded=false;    // โหลดแล้วหรือยัง
 
 // ════════════════════════════════════════════════════════
 //  PIN ENGINE
@@ -790,7 +833,6 @@ async function fetchAll(sys,bld,fromV,toV,stVal){
 // ════════════════════════════════════════════════════════
 function goSys(sys){
   curSys=sys;
-  closeSb();
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   const ni=document.getElementById('ni-'+sys); if(ni) ni.classList.add('on');
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
@@ -833,8 +875,7 @@ function _showTab(t){
 }
 
 function openAdmin(){
-  closeSb();
-  pinOnce(()=>{
+  pinOnce(async ()=>{
     document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
     document.getElementById('pg-admin').classList.add('on');
     document.getElementById('sys-tabs').classList.add('h');
@@ -842,6 +883,12 @@ function openAdmin(){
     document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
     document.getElementById('ni-admin')?.classList.add('on');
     loadAdminStats();
+    // โหลด GM data และ render ทุก section
+    await gmLoadAll();
+    gmRenderInspectors();
+    gmRenderBuildings();
+    gmPopulateFloorBldSelect();
+    gmRenderFloors();
   });
 }
 
@@ -868,7 +915,7 @@ async function init(){
     return;
   }
   try{
-    const r=await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:H});
+    const r=await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:getH()});
     const ok=r.ok;
     document.getElementById('cdot').className='cdot'+(ok?'':' off');
     document.getElementById('ctxt').textContent=ok?'เชื่อมต่อแล้ว':'เชื่อมต่อไม่ได้';
@@ -882,6 +929,10 @@ async function init(){
   // URL routing (QR link)
   const p=new URLSearchParams(location.search);
   const sys=p.get('sys');
+
+  // โหลด GM data ล่วงหน้า (background) — ไม่บล็อก UI
+  gmLoadAll().catch(()=>{});
+
   if(sys&&SYS[sys]){
     goSys(sys); _showTab('data');
     setTimeout(()=>{
@@ -1083,12 +1134,7 @@ function mkRowCells(sys,r){
     medical_air:()=>base+ncell(d.storage_pressure,null,null)+ncell(d.working_pressure,null,null)+`<td>${stag(d.motor_condition)}</td><td>${stag(d.control_panel)}</td><td>${stag(d.air_dryer_1)}</td><td>${stag(d.air_dryer_2)}</td><td>${stag(d.auto_drain)}</td>`+ncell(d.room_temp,null,53.9)+`<td>${stag(d.cleanliness)}</td>`,
     vacuum:()=>base+ncell(d.pressure,null,null)+`<td>${stag(d.motor_condition)}</td><td>${stag(d.control_panel)}</td><td>${stag(d.oil_level)}</td>`+ncell(d.room_temp,null,53.9)+`<td>${stag(d.cleanliness)}</td>`,
     wagd:()=>base+ncell(d.pressure,null,null)+`<td>${stag(d.motor_condition)}</td><td>${stag(d.control_panel)}</td><td>${stag(d.oil_level)}</td>`+ncell(d.room_temp,null,53.9)+`<td>${stag(d.cleanliness)}</td>`,
-    liquid_o2:()=>{
-      const vTH  = getLiqO2TH(r.building,'volume');
-      const ptTH = getLiqO2TH(r.building,'pressure_tank');
-      const rfTH = getLiqO2TH(r.building,'reg_from_tank');
-      return base+ncell(d.volume,vTH.mn,vTH.mx)+ncell(d.pressure_tank,ptTH.mn,ptTH.mx)+ncell(d.reg_from_tank,rfTH.mn,rfTH.mx)+ncell(d.reg_working,50,60)+`<td>${stag(d.vaporizer)}</td>`;
-    },
+    liquid_o2:()=>base+ncell(d.volume,null,null)+ncell(d.pressure_tank,null,null)+ncell(d.reg_from_tank,null,null)+ncell(d.reg_working,50,60)+`<td>${stag(d.vaporizer)}</td>`,
     area_alarm:()=>base+`<td>${d.floor_location||'—'}</td><td>${stag(d.sound)}</td><td>${stag(d.light)}</td><td>${stag(d.display)}</td>`,
   };
   m.nitrogen=m.nitrous_oxide=m.co2=m.o2_manifold;
@@ -1242,7 +1288,8 @@ function renderForm(){
   fBld='';
   const sys=curSys;
   const s=SYS[sys];
-  const blds=BLD[sys]||[];
+  // ใช้ gmGetBuildings แทน BLD โดยตรง — merge hardcode + gm_buildings
+  const blds=gmGetBuildings(sys);
   const fields=FIELDS[sys]||[];
 
   // Date/Time default
@@ -1266,6 +1313,12 @@ function renderForm(){
       <option value="">-- เลือกตึก/อาคาร --</option>${blds.map(b=>`<option value="${b}">${b}</option>`).join('')}
     </select>`;
   }
+
+  // Inspector datalist — merge preset จาก gm_inspectors (ยังพิมพ์เองได้)
+  const inspNames = gmGetInspectors();
+  const inspDL = inspNames.length
+    ? `<datalist id="dl-inspector">${inspNames.map(n=>`<option value="${n}">`).join('')}</datalist>`
+    : '';
 
   // Field rows
   const fieldRows=fields.map(f=>{
@@ -1297,6 +1350,7 @@ function renderForm(){
   }).join('');
 
   document.getElementById('form-wrap').innerHTML=`
+  ${inspDL}
   <div class="fsec">
     <div class="fsec-h"><h3>✏️ บันทึกการตรวจสอบ ${s.l}</h3></div>
     <div><table class="form-tbl">
@@ -1308,7 +1362,8 @@ function renderForm(){
         </td></tr>
       ${fieldRows}
       <tr><td class="fl">👤 ลงชื่อผู้ตรวจสอบ <span style="color:var(--red)">*</span></td>
-        <td class="fv"><input type="text" class="fc" id="ff-inspector" placeholder="ชื่อ-นามสกุล" style="max-width:300px"></td></tr>
+        <td class="fv"><input type="text" class="fc" id="ff-inspector" placeholder="ชื่อ-นามสกุล" style="max-width:300px"
+          list="dl-inspector" autocomplete="off"></td></tr>
       <tr><td class="fl">📝 หมายเหตุ</td>
         <td class="fv"><input type="text" class="fc" id="ff-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></td></tr>
     </table></div>
@@ -1339,8 +1394,13 @@ function selBld(bld){
 function onAlBldChange(bld){
   const flRow=document.getElementById('floor-row');
   const sel=document.getElementById('ff-floor-sel');
-  if(bld&&ALFLOORS[bld]){
-    sel.innerHTML='<option value="">-- เลือกชั้น/แผนก --</option>'+ALFLOORS[bld].map(f=>`<option value="${f}">${f}</option>`).join('');
+  // ใช้ gmGetFloors — merge ALFLOORS เดิม + gm_floors
+  const floors = gmGetFloors(bld);
+  if(bld && floors.length){
+    sel.innerHTML='<option value="">-- เลือกชั้น/แผนก --</option>'+floors.map(f=>`<option value="${f}">${f}</option>`).join('');
+    if(flRow) flRow.style.display='';
+  } else if(bld){
+    sel.innerHTML='<option value="">-- ยังไม่มีชั้น/แผนก --</option>';
     if(flRow) flRow.style.display='';
   } else {
     if(flRow) flRow.style.display='none';
@@ -1606,15 +1666,223 @@ async function runArchive(){
 }
 
 // ════════════════════════════════════════════════════════
+//  GM MANAGEMENT — ผู้ตรวจสอบ / อาคาร / ชั้นแผนก
+//  เก็บใน Supabase ตาราง gm_inspectors, gm_buildings, gm_floors
+//  ไม่แตะ BLD / ALFLOORS เดิม — merge ตอน render เท่านั้น
+// ════════════════════════════════════════════════════════
+
+// ── Generic REST helpers สำหรับตาราง GM ──────────────────
+async function gmFetch(table, params=''){
+  const r = await fetch(SUPA+'/rest/v1/'+table+params, {headers:{...H,'Prefer':'return=representation'}});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+async function gmPost(table, body){
+  const r = await fetch(SUPA+'/rest/v1/'+table, {method:'POST', headers:{...H,'Prefer':'return=representation'}, body:JSON.stringify(body)});
+  if(!r.ok){ const e=await r.json().catch(()=>{}); throw new Error(e?.message||'HTTP '+r.status); }
+  return r.json();
+}
+async function gmPatch(table, id, body){
+  const r = await fetch(SUPA+'/rest/v1/'+table+'?id=eq.'+id, {method:'PATCH', headers:{...H,'Prefer':'return=minimal'}, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+}
+async function gmDelete(table, id){
+  const r = await fetch(SUPA+'/rest/v1/'+table+'?id=eq.'+id, {method:'DELETE', headers:H});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+}
+
+// ── โหลดข้อมูลทั้งหมดครั้งเดียว ─────────────────────────
+async function gmLoadAll(force=false){
+  if(gmLoaded && !force) return;
+  try{
+    const [ins, bld, fl] = await Promise.all([
+      gmFetch('gm_inspectors','?order=sort_order.asc,created_at.asc'),
+      gmFetch('gm_buildings','?order=system_type.asc,sort_order.asc,created_at.asc'),
+      gmFetch('gm_floors','?order=building.asc,sort_order.asc,created_at.asc'),
+    ]);
+    gmInspectors = ins||[];
+    gmBuildings  = bld||[];
+    gmFloors     = fl||[];
+    gmLoaded = true;
+  }catch(e){
+    // ถ้าตารางยังไม่มี (ยังไม่ได้รัน SQL) — ใช้ array ว่าง
+    gmInspectors=[]; gmBuildings=[]; gmFloors=[]; gmLoaded=true;
+    console.warn('GM tables not found, using empty arrays:', e.message);
+  }
+}
+
+// ── merge BLD เดิม + gm_buildings ให้ renderForm ใช้ ─────
+function gmGetBuildings(sys){
+  const base = BLD[sys]||[];
+  const extra = gmBuildings.filter(b=>b.system_type===sys && b.active).map(b=>b.name);
+  // deduplicate — extra เท่านั้นที่อาจซ้ำกับ base
+  const seen = new Set(base);
+  return [...base, ...extra.filter(n=>!seen.has(n))];
+}
+
+// ── merge ALFLOORS เดิม + gm_floors ให้ onAlBldChange ใช้ ─
+function gmGetFloors(building){
+  const base = ALFLOORS[building]||[];
+  const extra = gmFloors.filter(f=>f.building===building && f.active).map(f=>f.floor_name);
+  const seen = new Set(base);
+  return [...base, ...extra.filter(n=>!seen.has(n))];
+}
+
+// ── merge Inspectors สำหรับ datalist ────────────────────
+function gmGetInspectors(){
+  return gmInspectors.filter(i=>i.active).map(i=>i.name);
+}
+
+// ════════ RENDER LISTS IN ADMIN ════════
+
+function gmRenderInspectors(){
+  const el = document.getElementById('gm-insp-list');
+  if(!el) return;
+  if(!gmInspectors.length){ el.innerHTML='<div class="gm-empty">ยังไม่มีรายชื่อ — เพิ่มด้านล่าง</div>'; return; }
+  el.innerHTML = gmInspectors.map(item=>`
+    <div class="gm-item${item.active?'':' inactive'}">
+      <span class="gm-name">${item.active?'👤':'○'} ${item.name}</span>
+      <button class="gm-btn t" onclick="gmToggleInspector('${item.id}',${item.active})">${item.active?'ปิด':'เปิด'}</button>
+    </div>`).join('');
+}
+
+function gmRenderBuildings(){
+  const el = document.getElementById('gm-bld-list');
+  if(!el) return;
+  if(!gmBuildings.length){ el.innerHTML='<div class="gm-empty">ยังไม่มีอาคารเพิ่มเติม — เพิ่มด้านล่าง</div>'; return; }
+  el.innerHTML = gmBuildings.map(item=>`
+    <div class="gm-item${item.active?'':' inactive'}">
+      <span class="gm-name">🏢 ${item.name}</span>
+      <span class="gm-sys">${SYS[item.system_type]?.ic||''} ${SYS[item.system_type]?.l||item.system_type}</span>
+      <button class="gm-btn t" onclick="gmToggleBuilding('${item.id}',${item.active})">${item.active?'ปิด':'เปิด'}</button>
+    </div>`).join('');
+}
+
+function gmRenderFloors(){
+  const bld = document.getElementById('gm-fl-bld')?.value||'';
+  const el  = document.getElementById('gm-fl-list');
+  if(!el) return;
+  if(!bld){ el.innerHTML='<div class="gm-empty">เลือกอาคารก่อน</div>'; return; }
+  const items = gmFloors.filter(f=>f.building===bld);
+  if(!items.length){ el.innerHTML='<div class="gm-empty">ยังไม่มีชั้น/แผนกเพิ่มเติม</div>'; return; }
+  el.innerHTML = items.map(item=>`
+    <div class="gm-item${item.active?'':' inactive'}">
+      <span class="gm-name">${item.active?'🏥':'○'} ${item.floor_name}</span>
+      <button class="gm-btn t" onclick="gmToggleFloor('${item.id}',${item.active})">${item.active?'ปิด':'เปิด'}</button>
+      <button class="gm-btn d" onclick="gmDeleteFloor('${item.id}','${item.floor_name.replace(/'/g,"\\'")}')">ลบ</button>
+    </div>`).join('');
+}
+
+// populate area alarm building dropdown in admin
+function gmPopulateFloorBldSelect(){
+  const sel = document.getElementById('gm-fl-bld');
+  if(!sel) return;
+  const blds = BLD.area_alarm||[];
+  sel.innerHTML = '<option value="">-- เลือกอาคาร --</option>'
+    + blds.map(b=>`<option value="${b}">${b}</option>`).join('');
+}
+
+function gmLoadFloors(){
+  gmRenderFloors();
+}
+
+// ════════ ADD ════════
+
+async function gmAddInspector(){
+  const inp = document.getElementById('gm-insp-input');
+  const name = (inp?.value||'').trim();
+  if(!name){ toast('กรุณากรอกชื่อ','er'); return; }
+  if(gmInspectors.some(i=>i.name===name)){ toast('ชื่อนี้มีอยู่แล้ว','er'); return; }
+  try{
+    const res = await gmPost('gm_inspectors',{name, active:true, sort_order:gmInspectors.length});
+    gmInspectors.push(res[0]);
+    gmRenderInspectors();
+    if(inp) inp.value='';
+    toast('เพิ่มผู้ตรวจสอบแล้ว','ok');
+  }catch(e){ toast('ผิดพลาด: '+e.message,'er'); }
+}
+
+async function gmAddBuilding(){
+  const sys  = (document.getElementById('gm-bld-sys')?.value||'').trim();
+  const name = (document.getElementById('gm-bld-input')?.value||'').trim();
+  if(!sys)  { toast('กรุณาเลือกระบบ','er'); return; }
+  if(!name) { toast('กรุณากรอกชื่ออาคาร','er'); return; }
+  const all = gmGetBuildings(sys);
+  if(all.includes(name)){ toast('ชื่ออาคารนี้มีอยู่แล้ว','er'); return; }
+  try{
+    const res = await gmPost('gm_buildings',{system_type:sys, name, active:true, sort_order:gmBuildings.filter(b=>b.system_type===sys).length});
+    gmBuildings.push(res[0]);
+    gmRenderBuildings();
+    const inp = document.getElementById('gm-bld-input');
+    if(inp) inp.value='';
+    toast('เพิ่มอาคารแล้ว','ok');
+  }catch(e){ toast('ผิดพลาด: '+e.message,'er'); }
+}
+
+async function gmAddFloor(){
+  const bld  = (document.getElementById('gm-fl-bld')?.value||'').trim();
+  const name = (document.getElementById('gm-fl-input')?.value||'').trim();
+  if(!bld)  { toast('กรุณาเลือกอาคาร','er'); return; }
+  if(!name) { toast('กรุณากรอกชั้น/แผนก','er'); return; }
+  const all = gmGetFloors(bld);
+  if(all.includes(name)){ toast('ชื่อนี้มีอยู่แล้ว','er'); return; }
+  try{
+    const res = await gmPost('gm_floors',{building:bld, floor_name:name, active:true, sort_order:gmFloors.filter(f=>f.building===bld).length});
+    gmFloors.push(res[0]);
+    gmRenderFloors();
+    const inp = document.getElementById('gm-fl-input');
+    if(inp) inp.value='';
+    toast('เพิ่มชั้น/แผนกแล้ว','ok');
+  }catch(e){ toast('ผิดพลาด: '+e.message,'er'); }
+}
+
+// ════════ TOGGLE ════════
+
+async function gmToggleInspector(id, curActive){
+  try{
+    await gmPatch('gm_inspectors', id, {active:!curActive});
+    const item = gmInspectors.find(i=>i.id===id);
+    if(item) item.active=!curActive;
+    gmRenderInspectors();
+    toast(curActive?'ปิดแล้ว':'เปิดแล้ว','ok');
+  }catch(e){ toast('ผิดพลาด: '+e.message,'er'); }
+}
+
+async function gmToggleBuilding(id, curActive){
+  try{
+    await gmPatch('gm_buildings', id, {active:!curActive});
+    const item = gmBuildings.find(b=>b.id===id);
+    if(item) item.active=!curActive;
+    gmRenderBuildings();
+    toast(curActive?'ปิดอาคารแล้ว':'เปิดอาคารแล้ว','ok');
+  }catch(e){ toast('ผิดพลาด: '+e.message,'er'); }
+}
+
+async function gmToggleFloor(id, curActive){
+  try{
+    await gmPatch('gm_floors', id, {active:!curActive});
+    const item = gmFloors.find(f=>f.id===id);
+    if(item) item.active=!curActive;
+    gmRenderFloors();
+    toast(curActive?'ปิดแล้ว':'เปิดแล้ว','ok');
+  }catch(e){ toast('ผิดพลาด: '+e.message,'er'); }
+}
+
+// ════════ DELETE ════════
+
+async function gmDeleteFloor(id, name){
+  if(!confirm(`ลบ "${name}" ออก?\n⚠️ ถ้ามีข้อมูลเก่าใช้ชื่อนี้ — จะยังแสดงเป็นข้อความปกติ`)) return;
+  try{
+    await gmDelete('gm_floors', id);
+    gmFloors = gmFloors.filter(f=>f.id!==id);
+    gmRenderFloors();
+    toast('ลบแล้ว','ok');
+  }catch(e){ toast('ผิดพลาด: '+e.message,'er'); }
+}
+
+// ════════════════════════════════════════════════════════
 //  HELPERS
 // ════════════════════════════════════════════════════════
-// Lookup merged threshold (base + building override) for liquid_o2
-function getLiqO2TH(bld, field){
-  const base = (TH.liquid_o2?.['*']?.[field])   || {};
-  const over = (TH.liquid_o2?.[bld]?.[field])   || {};
-  const merged = {...base, ...over};
-  return { mn: merged.mn??null, mx: merged.mx??null };
-}
 function ncell(v,mn,mx){
   if(v===null||v===undefined||v==='') return `<td style="color:var(--muted)">—</td>`;
   const n=Number(v);
@@ -1707,7 +1975,7 @@ async function pingDB(){
   if(el){ el.textContent='กำลัง ping…'; el.style.color='var(--muted)'; }
   try{
     const t0=Date.now();
-    const r=await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:H});
+    const r=await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:getH()});
     const ms=Date.now()-t0;
     if(r.ok){
       if(el){ el.textContent='✅ เชื่อมต่อสำเร็จ ('+ms+'ms) — '+new Date().toLocaleTimeString('th-TH'); el.style.color='var(--green)'; }
@@ -1741,25 +2009,140 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
 
 // Auto-ping ทุก 6 ชั่วโมง ป้องกัน Supabase Free Tier pause
 setInterval(async ()=>{
-  try{ await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:H}); }catch(e){}
+  if(!sessionStorage.getItem(JWT_K)) return; // ไม่ ping ถ้าไม่ได้ login
+  try{ await fetch(SUPA+'/rest/v1/inspection_records?limit=1',{headers:getH()}); }catch(e){}
 }, 6*3600*1000);
 
 // ════════════════════════════════════════════════════════
-//  MOBILE SIDEBAR
+//  SUPABASE AUTH — LOGIN / LOGOUT / TOKEN REFRESH
 // ════════════════════════════════════════════════════════
-function openSb(){
-  document.getElementById('sidebar').classList.add('mob-open');
-  document.getElementById('sb-overlay').classList.add('mob-open');
+
+function _lsSetErr(msg){ const el=document.getElementById('ls-err'); if(el) el.textContent=msg; }
+function _lsSetBusy(busy){
+  const btn=document.getElementById('ls-btn');
+  if(btn){ btn.disabled=busy; btn.textContent=busy?'⏳ กำลังเข้าระบบ…':'เข้าสู่ระบบ'; }
 }
-function closeSb(){
-  document.getElementById('sidebar').classList.remove('mob-open');
-  document.getElementById('sb-overlay').classList.remove('mob-open');
+function _enterApp(email){
+  H = getH(); // อัพเดท H ให้ใช้ JWT ล่าสุด
+  document.getElementById('login-screen').classList.add('h');
+  const app = document.getElementById('app');
+  app.style.display='flex';
+  _lsSetErr('');
+  // แสดง email ใน topbar
+  const tbUser = document.getElementById('tb-user');
+  if(tbUser) tbUser.textContent = email ? '👤 '+email.split('@')[0] : '';
+}
+function _showLogin(){
+  document.getElementById('login-screen').classList.remove('h');
+  document.getElementById('app').style.display='none';
+  const ps=document.getElementById('ls-pass');
+  if(ps) ps.value='';
+  _lsSetErr(''); _lsSetBusy(false);
+  setTimeout(()=>{ const em=document.getElementById('ls-email'); if(em) em.focus(); },150);
 }
 
+async function doLogin(){
+  if(location.protocol==='file:'){
+    _lsSetErr('❌ ต้องเปิดผ่าน HTTP Server — ไม่สามารถเปิดจาก file:// ได้');
+    return;
+  }
+  const email=(document.getElementById('ls-email')?.value||'').trim();
+  const pass =document.getElementById('ls-pass')?.value||'';
+  if(!email||!pass){ _lsSetErr('กรุณากรอก Email และ Password'); return; }
+  _lsSetBusy(true); _lsSetErr('');
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),15000);
+  try{
+    const res=await fetch(SUPA+'/auth/v1/token?grant_type=password',{
+      method:'POST',
+      headers:{'apikey':AKEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass}),
+      signal:ctrl.signal
+    });
+    clearTimeout(timer);
+    const data=await res.json();
+    if(!res.ok){
+      const msg=data.error_description||data.msg||data.error||'เข้าระบบไม่สำเร็จ';
+      const th=msg.includes('Invalid login')||msg.includes('invalid_credentials')?'Email หรือ Password ไม่ถูกต้อง':
+               msg.includes('Email not confirmed')?'Email ยังไม่ได้ยืนยัน':
+               msg.includes('Too many')?'พยายามเข้าหลายครั้งเกินไป — รอสักครู่':
+               'เข้าระบบไม่สำเร็จ ('+res.status+')';
+      _lsSetErr('❌ '+th); _lsSetBusy(false); return;
+    }
+    // ✅ สำเร็จ
+    sessionStorage.setItem(JWT_K, data.access_token);
+    if(data.refresh_token) sessionStorage.setItem(REF_K, data.refresh_token);
+    sessionStorage.setItem(EXP_K, String(Date.now()+(data.expires_in||3600)*1000));
+    _lsSetBusy(false);
+    _enterApp(email);
+    init();
+  }catch(e){
+    clearTimeout(timer);
+    _lsSetErr('❌ '+(e.name==='AbortError'?'หมดเวลาเชื่อมต่อ (15s)':'เชื่อมต่อไม่ได้: '+e.message));
+    _lsSetBusy(false);
+  }
+}
+
+async function doLogout(){
+  if(!confirm('ออกจากระบบ?')) return;
+  try{
+    await fetch(SUPA+'/auth/v1/logout',{
+      method:'POST',
+      headers:{'apikey':AKEY,'Authorization':'Bearer '+(sessionStorage.getItem(JWT_K)||''),'Content-Type':'application/json'}
+    });
+  }catch(_){}
+  sessionStorage.removeItem(JWT_K);
+  sessionStorage.removeItem(REF_K);
+  sessionStorage.removeItem(EXP_K);
+  _showLogin();
+}
+
+async function ensureToken(){
+  const exp=Number(sessionStorage.getItem(EXP_K)||0);
+  const ref=sessionStorage.getItem(REF_K);
+  if(!ref||!exp) return;
+  if(Date.now()<exp-5*60*1000) return; // ยังไม่ถึงเวลา
+  try{
+    const res=await fetch(SUPA+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',
+      headers:{'apikey':AKEY,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:ref})
+    });
+    if(!res.ok) throw new Error('refresh failed');
+    const data=await res.json();
+    sessionStorage.setItem(JWT_K, data.access_token);
+    if(data.refresh_token) sessionStorage.setItem(REF_K, data.refresh_token);
+    sessionStorage.setItem(EXP_K, String(Date.now()+(data.expires_in||3600)*1000));
+    H=getH();
+  }catch(_){
+    toast('Session หมดอายุ — กรุณาเข้าระบบใหม่','er');
+    sessionStorage.removeItem(JWT_K);
+    sessionStorage.removeItem(REF_K);
+    sessionStorage.removeItem(EXP_K);
+    _showLogin();
+  }
+}
+
+// auto-refresh ทุก 50 นาที
+setInterval(async ()=>{ if(sessionStorage.getItem(JWT_K)) await ensureToken(); },50*60*1000);
+
+// ตรวจ session เมื่อโหลดหน้า
+(function checkLoginGate(){
+  const tok=sessionStorage.getItem(JWT_K);
+  const exp=Number(sessionStorage.getItem(EXP_K)||0);
+  if(tok&&(exp===0||Date.now()<exp)){
+    // มี session อยู่ — ดึง email จาก token payload
+    let email='';
+    try{ email=JSON.parse(atob(tok.split('.')[1])).email||''; }catch(_){}
+    _enterApp(email);
+    init();
+  }
+  // ไม่มี session → login-screen แสดงอยู่แล้ว
+})();
+
 // ════════════════════════════════════════════════════════
-//  BOOT
+//  BOOT — init() เรียกโดย doLogin() / checkLoginGate() เท่านั้น
 // ════════════════════════════════════════════════════════
-init();
 
 </script>
 </body>
