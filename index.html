@@ -245,6 +245,9 @@ tr:hover td{background:#f6faff}
 @media(max-width:860px){.mc-grid{grid-template-columns:1fr}}
 
 /* ── MOBILE ── */
+.fv-dt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ff-dt-d{max-width:170px;min-width:140px;flex:1}
+.ff-dt-t{max-width:130px;min-width:100px;flex:1}
 #mob-btn{display:none;background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:6px;font-size:20px;color:var(--text);line-height:1;flex-shrink:0}
 #mob-btn:hover{background:var(--bg3)}
 #sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:998}
@@ -273,8 +276,9 @@ tr:hover td{background:#f6faff}
   .form-tbl .fv{display:block;width:100%;padding:4px 12px 10px;box-sizing:border-box}
   .form-tbl tr{display:block;border-bottom:1px solid var(--bg3)}
   .form-tbl .fv>div[style*="display:flex"]{flex-wrap:wrap;gap:6px}
+  .fv-dt{flex-direction:column;gap:6px}
+  .ff-dt-d,.ff-dt-t{max-width:100%;min-width:0;width:100%;box-sizing:border-box}
   .form-tbl input[type=date],.form-tbl input[type=time]{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
-  .form-tbl td[style*="display:flex"]{display:block!important}
   .bld-g{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
   .uw{max-width:100%;width:100%}
   .uw .fc{width:100%}
@@ -1693,9 +1697,9 @@ function renderForm(){
     <div><table class="form-tbl">
       <tr><td class="fl">🏢 ตึก / อาคาร <span style="color:var(--red)">*</span></td><td class="fv">${bldHtml}</td></tr>
       <tr><td class="fl">📅 วันที่-เวลา <span style="color:var(--red)">*</span></td>
-        <td class="fv" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input type="date" class="fc" id="ff-date" value="${defDate}" style="max-width:170px;min-width:140px">
-          <input type="time" class="fc" id="ff-time" value="${defTime}" style="max-width:130px;min-width:100px">
+        <td class="fv fv-dt">
+          <input type="date" class="fc ff-dt-d" id="ff-date" value="${defDate}">
+          <input type="time" class="fc ff-dt-t" id="ff-time" value="${defTime}">
         </td></tr>
       ${fieldRows}
       <tr><td class="fl">👤 ลงชื่อผู้ตรวจสอบ <span style="color:var(--red)">*</span></td>
