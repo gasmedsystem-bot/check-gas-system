@@ -7,6 +7,9 @@
 <meta name="description" content="ระบบบันทึกการตรวจสอบระบบแก๊สทางการแพทย์ - Medical Gas Inspection System">
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script>/* ธีม: ค่าเริ่มต้นมืด — จำที่ผู้ใช้เลือกไว้ในเครื่อง (ตั้งก่อนวาดหน้า กันกะพริบ) */
+(function(){var t='dark';try{if(localStorage.getItem('gm_theme')==='light')t='light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <!-- ต้องเปิดผ่าน HTTP server เท่านั้น (localhost หรือ GitHub Pages) ไม่ใช่ file:// -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -24,6 +27,28 @@
   --yellow:#b07d00; --yellow-lt:#fef9e7;
   --r:8px; --sh:0 1px 3px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);
   --sh2:0 4px 20px rgba(0,0,0,.1);
+  /* โทเคนที่ใช้ร่วมกับธีมมืด */
+  --blue-f:#1a6fbd; --blue2-f:#0d5aa7; --green-f:#0f7b3e;       /* สีพื้นปุ่มทึบ (ตัวอักษรขาว) */
+  --row-hover:#f6faff; --row-new:#eff6ff; --pk-hover:#dbeafe;
+  --ok-bd:#b7dfc9; --al-bd:#f5c6c3;
+  --chart-grid:#e8eef5; --chart-blue:#1a6fbd; --chart-red:#c0392b; --chart-green:#0f7b3e;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --sb:#0a111b; --sb2:#16202f; --sba:#7ab8ff;
+  --bg:#0e1621; --card:#162131; --border:#2a3a50; --bg3:#1e2b3d;
+  --text:#e4ebf3; --muted:#90a4bc;
+  --blue:#58a6ff; --blue2:#79b8ff; --blue-lt:#16314f;
+  --green:#4cc38a; --green-lt:#12301f;
+  --red:#ff7b72;  --red-lt:#3b1c1f;
+  --yellow:#e3b341; --yellow-lt:#3a2f10;
+  --sh:0 1px 3px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25);
+  --sh2:0 4px 20px rgba(0,0,0,.5);
+  --blue-f:#2a6fc9; --blue2-f:#3a80dc; --green-f:#1a8449;
+  --row-hover:#1b2a3f; --row-new:#1a3350; --pk-hover:#254468;
+  --ok-bd:#1f5a3a; --al-bd:#6b2d33;
+  --chart-grid:#2a3a50; --chart-blue:#58a6ff; --chart-red:#ff7b72; --chart-green:#4cc38a;
+  color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
@@ -94,11 +119,11 @@ thead tr{background:var(--bg3)}
 th{padding:8px 10px;text-align:left;font-weight:600;color:var(--muted);font-size:10px;letter-spacing:.5px;white-space:nowrap;border-bottom:2px solid var(--border);text-transform:uppercase}
 td{padding:7px 10px;border-bottom:1px solid var(--bg3);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#f6faff}
-.tr-new td{background:#eff6ff!important}
+tr:hover td{background:var(--row-hover)}
+.tr-new td{background:var(--row-new)!important}
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
-.b-ok{background:var(--green-lt);color:var(--green);border:1px solid #b7dfc9}
-.b-al{background:var(--red-lt);color:var(--red);border:1px solid #f5c6c3}
+.b-ok{background:var(--green-lt);color:var(--green);border:1px solid var(--ok-bd)}
+.b-al{background:var(--red-lt);color:var(--red);border:1px solid var(--al-bd)}
 .mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
 .v-ok{color:var(--text)}.v-er{color:var(--red);font-weight:700}
 .stag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600}
@@ -109,7 +134,7 @@ tr:hover td{background:#f6faff}
 .pgs{display:flex;align-items:center;gap:5px;margin-top:10px;justify-content:flex-end;flex-wrap:wrap}
 .pgs button{padding:4px 10px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:5px;cursor:pointer;font-size:11px}
 .pgs button:hover{background:var(--bg3)}
-.pgs button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.pgs button.on{background:var(--blue-f);border-color:var(--blue-f);color:#fff}
 .pgs button:disabled{opacity:.4;cursor:not-allowed}
 .pinfo{font-size:11px;color:var(--muted);margin-right:auto}
 
@@ -122,10 +147,10 @@ tr:hover td{background:#f6faff}
 
 /* ── BUTTONS ── */
 .btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;border:1px solid transparent;transition:.12s;font-weight:500;display:inline-flex;align-items:center;gap:5px}
-.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}
-.btn-p:hover{background:var(--blue2)}
+.btn-p{background:var(--blue-f);color:#fff;border-color:var(--blue-f)}
+.btn-p:hover{background:var(--blue2-f)}
 .btn-p:disabled{opacity:.5;cursor:not-allowed}
-.btn-s{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-s{background:var(--green-f);color:#fff;border-color:var(--green-f)}
 .btn-o{background:var(--card);color:var(--text);border-color:var(--border)}
 .btn-o:hover{background:var(--bg3)}
 .btn-d{background:var(--card);color:var(--red);border-color:var(--red)}
@@ -148,7 +173,7 @@ tr:hover td{background:#f6faff}
 .fhint.ok{color:var(--green);font-weight:600}
 .fhint.er{color:var(--red);font-weight:600}
 .fsec{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;box-shadow:var(--sh);overflow:hidden}
-.fsec-h{background:var(--blue);padding:10px 16px}
+.fsec-h{background:var(--blue-f);padding:10px 16px}
 .fsec-h h3{font-size:13px;font-weight:600;color:#fff}
 .tgl{padding:6px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:12px;font-family:'Sarabun',sans-serif;transition:.12s;font-weight:500}
 .tgl:hover{border-color:var(--blue);color:var(--blue)}
@@ -167,7 +192,7 @@ tr:hover td{background:#f6faff}
 /* ── PIN MODAL ── */
 .ovl{position:fixed;inset:0;background:rgba(15,30,50,.65);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
 .ovl.h{display:none}
-.pmod{background:#fff;border-radius:14px;padding:26px 22px;width:300px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+.pmod{background:var(--card);border-radius:14px;padding:26px 22px;width:300px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.22)}
 .pm-ico{font-size:34px;margin-bottom:8px}
 .pmod h2{font-size:16px;font-weight:700;margin-bottom:3px}
 .pmod p{font-size:12px;color:var(--muted);margin-bottom:16px}
@@ -176,15 +201,15 @@ tr:hover td{background:#f6faff}
 .pd.on{background:var(--blue);border-color:var(--blue)}
 .ppad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 .pk{padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:16px;font-weight:600;color:var(--text);transition:.1s;font-family:'IBM Plex Mono',monospace}
-.pk:hover{background:#dbeafe;border-color:var(--blue)}
+.pk:hover{background:var(--pk-hover);border-color:var(--blue)}
 .pk:active{transform:scale(.93)}
 .perr{height:18px;font-size:11px;color:var(--red);margin-top:6px;font-weight:600}
 
 /* ── EDIT MODAL ── */
 .modal-wrap{position:fixed;inset:0;background:rgba(15,30,50,.6);z-index:999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .modal-wrap.h{display:none}
-.modal{background:#fff;border-radius:12px;width:90%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)}
-.modal-h{background:var(--blue);padding:14px 18px;display:flex;align-items:center;gap:10px;border-radius:12px 12px 0 0}
+.modal{background:var(--card);border-radius:12px;width:90%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)}
+.modal-h{background:var(--blue-f);padding:14px 18px;display:flex;align-items:center;gap:10px;border-radius:12px 12px 0 0}
 .modal-h h3{color:#fff;font-size:14px;font-weight:600}
 .modal-h .close{margin-left:auto;background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:5px;cursor:pointer;font-size:14px}
 .modal-b{padding:18px}
@@ -192,9 +217,9 @@ tr:hover td{background:#f6faff}
 /* ── TOAST ── */
 #toasts{position:fixed;bottom:16px;right:16px;z-index:10000;display:flex;flex-direction:column;gap:6px}
 .toast{padding:10px 16px;border-radius:var(--r);font-size:12px;font-family:'Sarabun',sans-serif;box-shadow:var(--sh2);animation:tin .18s ease;max-width:280px}
-.toast.ok{background:#fff;border-left:4px solid var(--green);color:var(--green)}
-.toast.er{background:#fff;border-left:4px solid var(--red);color:var(--red)}
-.toast.if{background:#fff;border-left:4px solid var(--blue);color:var(--blue)}
+.toast.ok{background:var(--card);border-left:4px solid var(--green);color:var(--green)}
+.toast.er{background:var(--card);border-left:4px solid var(--red);color:var(--red)}
+.toast.if{background:var(--card);border-left:4px solid var(--blue);color:var(--blue)}
 @keyframes tin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── MISC ── */
@@ -249,7 +274,7 @@ tr:hover td{background:#f6faff}
 .gm-btn.d:hover{background:var(--red-lt)}
 .gm-btn.t{color:var(--muted)}
 .gm-btn.e{color:var(--blue);border-color:var(--blue)}
-.gm-btn.e:hover{background:#e8f0fe}
+.gm-btn.e:hover{background:var(--blue-lt)}
 .gm-edit-row{display:none;gap:6px;align-items:center;padding:6px 10px;background:var(--card);border-radius:6px;border:1px solid var(--blue);margin-top:4px}
 .gm-edit-row input{flex:1;padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:'Sarabun',sans-serif}
 .gm-edit-row.show{display:flex}
@@ -264,7 +289,7 @@ tr:hover td{background:#f6faff}
 .gm-mv:hover:not([disabled]){background:var(--bg3);color:var(--text)}
 .gm-mv[disabled]{opacity:.25;cursor:default}
 .gm-status-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;flex-shrink:0}
-.gm-status-badge.act{background:var(--green-lt);color:var(--green);border:1px solid #b7dfc9}
+.gm-status-badge.act{background:var(--green-lt);color:var(--green);border:1px solid var(--ok-bd)}
 /* System editor (Admin) */
 .sf-head{display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:12px}
 .sf-head label{font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
@@ -276,7 +301,7 @@ tr:hover td{background:#f6faff}
 .sf-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px}
 .sf-row .fc{width:auto;min-width:0}
 .sf-row .sf-l{flex:2 1 200px}.sf-row .sf-t{flex:0 0 110px}.sf-row .sf-s{flex:1 1 90px}.sf-row .sf-o{flex:2 1 170px}
-.sf-row .sf-bad{border-color:#f3c6c1}
+.sf-row .sf-bad{border-color:var(--al-bd)}
 .sf-fixed{color:var(--muted);font-size:12px}
 .sf-off{opacity:.7;border-style:dashed}
 .sf-offnote{flex:1 1 100%;font-size:11px;color:var(--yellow)}
@@ -296,7 +321,7 @@ tr:hover td{background:#f6faff}
 .mf-bar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;background:var(--bg3);padding:9px 12px;border-radius:var(--r);border:1px solid var(--border);margin-bottom:12px}
 .mf-qbtn{padding:5px 12px;border-radius:6px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:11px;font-family:'Sarabun',sans-serif;font-weight:500;transition:.12s}
 .mf-qbtn:hover{border-color:var(--blue);color:var(--blue)}
-.mf-qbtn.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.mf-qbtn.on{background:var(--blue-f);border-color:var(--blue-f);color:#fff;font-weight:600}
 .mf-sep{width:1px;height:20px;background:var(--border);margin:0 2px}
 /* ── MAIN DASHBOARD CHARTS ── */
 .mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
@@ -535,7 +560,7 @@ tr:hover td{background:#f6faff}
 /* ── LOGIN SCREEN ── */
 #login-screen{position:fixed;inset:0;z-index:20000;background:linear-gradient(135deg,#0f1e32 0%,#1a3a5c 60%,#0d2540 100%);display:flex;align-items:center;justify-content:center;font-family:'Sarabun',sans-serif}
 #login-screen.h{display:none}
-.ls-card{background:#fff;border-radius:18px;padding:36px 32px 28px;width:340px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:ls-in .22s ease}
+.ls-card{background:var(--card);border-radius:18px;padding:36px 32px 28px;width:340px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:ls-in .22s ease}
 @keyframes ls-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .ls-logo{font-size:38px;margin-bottom:6px}
 .ls-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:2px}
@@ -543,12 +568,24 @@ tr:hover td{background:#f6faff}
 .ls-field{margin-bottom:14px;text-align:left}
 .ls-field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px}
 .ls-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif;color:var(--text);background:var(--bg3);outline:none;transition:.12s}
-.ls-input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(26,111,189,.1)}
-.ls-btn{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;transition:.12s;margin-top:4px}
-.ls-btn:hover{background:var(--blue2)}
+.ls-input:focus{border-color:var(--blue);background:var(--card);box-shadow:0 0 0 3px rgba(26,111,189,.1)}
+.ls-btn{width:100%;padding:11px;background:var(--blue-f);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;transition:.12s;margin-top:4px}
+.ls-btn:hover{background:var(--blue2-f)}
 .ls-btn:disabled{opacity:.5;cursor:not-allowed}
 .ls-err{min-height:18px;font-size:12px;color:var(--red);font-weight:600;margin-top:10px;text-align:center}
 .ls-version{font-size:10px;color:var(--muted);margin-top:16px;opacity:.7}
+/* จอสัมผัส/จอแคบ: ปุ่มและช่องเลือกขนาดเล็กให้นิ้วแตะง่าย (สูงอย่างน้อย 34px) */
+@media (pointer:coarse),(max-width:768px){
+  .btn-sm,.gm-btn,.cb-sel{min-height:34px}
+  .modal-h .close{width:34px;height:34px}
+  .sf-icons button{min-width:34px;min-height:34px}
+  .pgs button,.tgl{min-height:34px;min-width:34px}
+  .gm-mv{min-width:32px;min-height:22px;font-size:11px}
+}
+/* iOS Safari ซูมหน้าเองเมื่อแตะช่องที่ตัวอักษรเล็กกว่า 16px → บังคับ 16px เฉพาะอุปกรณ์สัมผัส (รวมช่องที่ตั้งขนาดไว้ในแท็ก) */
+@media (pointer:coarse){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}
+}
 </style>
 </head>
 <body>
@@ -657,6 +694,7 @@ tr:hover td{background:#f6faff}
         <div class="cdot" id="cdot"></div>
         <span class="ctxt" id="ctxt">กำลังเชื่อมต่อ…</span>
         <span class="ctxt" id="tb-user" style="color:var(--blue);font-weight:600"></span>
+        <button class="btn btn-o btn-sm" id="btn-theme" onclick="gmToggleTheme()" title="สลับธีม">☀️</button>
         <button class="btn btn-o btn-sm" onclick="refresh()" title="รีเฟรช">🔄 รีเฟรช</button>
         <button class="btn btn-o btn-sm" onclick="doLogout()" style="color:var(--red);border-color:var(--red)" title="ออกจากระบบ">🚪 ออก</button>
       </div>
@@ -994,7 +1032,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
 
       <!-- รายงานรายเดือน -->
       <div class="ovl h" id="ov-rep">
-        <div style="background:#fff;border-radius:12px;padding:22px;width:340px;box-shadow:var(--sh2)">
+        <div style="background:var(--card);border-radius:12px;padding:22px;width:340px;box-shadow:var(--sh2)">
           <h3 style="font-size:14px;margin-bottom:12px">📄 รายงานประจำเดือน (PDF)</h3>
           <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">เดือน</label>
           <input type="month" class="fc" id="rep-month" style="margin-bottom:10px">
@@ -1010,7 +1048,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
 
       <!-- QR/Share -->
       <div class="ovl h" id="ov-qr">
-        <div style="background:#fff;border-radius:12px;padding:22px;width:320px;text-align:center;box-shadow:var(--sh2)">
+        <div style="background:var(--card);border-radius:12px;padding:22px;width:320px;text-align:center;box-shadow:var(--sh2)">
           <h3 style="font-size:14px;margin-bottom:10px">🔗 Link แชร์</h3>
           <div id="qr-img" style="margin:10px auto;display:flex;justify-content:center"></div>
           <input type="text" class="fc" id="qr-url" readonly style="margin:10px 0;font-size:10px">
@@ -1607,6 +1645,7 @@ const GM_UNIT_SEP = '\u0001';
 let gmDashCfg = {due:{}}, gmDashCfgRow = false, gmDashLoaded = false;
 let gmLatestRpc = true;               // false = ยังไม่ได้ติดตั้งฟังก์ชัน gm_latest_per_unit → ใช้วิธีสำรอง
 let _mxSeq = 0;
+let _mainRows = null;                 // ข้อมูลกราฟหน้า Dashboard รวมที่โหลดล่าสุด (วาดใหม่ตอนสลับธีมโดยไม่ดึงซ้ำ)
 
 function bkkDate(ts){ return ts ? new Date(ts).toLocaleDateString('sv-SE',{timeZone:'Asia/Bangkok'}) : ''; }
 function bkkToday(){ return bkkDate(Date.now()); }
@@ -1794,6 +1833,41 @@ async function gmSaveDue(){
 // ════════════════════════════════════════════════════════
 //  สำรองข้อมูล / รายงานรายเดือน (PDF) / QR ต่อจุดตรวจ
 // ════════════════════════════════════════════════════════
+// ── ธีม สว่าง/มืด (ค่าเริ่มต้นมืด · จำค่าที่เลือกไว้ในเครื่อง) ──
+function gmTheme(){ return document.documentElement.getAttribute('data-theme')==='light' ? 'light' : 'dark'; }
+function gmCssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }   // กราฟ (canvas) ใช้ค่าสีจริง ไม่รู้จัก var()
+function gmApplyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  const b=document.getElementById('btn-theme');
+  if(b){ b.textContent = t==='dark' ? '☀️' : '🌙'; b.title = t==='dark' ? 'เปลี่ยนเป็นธีมสว่าง' : 'เปลี่ยนเป็นธีมมืด'; }
+}
+// กราฟที่วาดอยู่แล้ว: เปลี่ยนเฉพาะสีตัวอักษร/เส้นตาราง ไม่ต้องดึงข้อมูลใหม่
+function gmRecolorCharts(){
+  if(typeof Chart==='undefined') return;
+  const m=gmCssVar('--muted'), g=gmCssVar('--chart-grid');
+  Object.values(Chart.instances||{}).forEach(c=>{
+    const o=c.options||{};
+    if(o.plugins?.legend?.labels) o.plugins.legend.labels.color=m;
+    Object.values(o.scales||{}).forEach(sc=>{
+      if(sc.ticks) sc.ticks.color=m;
+      if(sc.grid && sc.grid.display!==false && sc.grid.color!==undefined) sc.grid.color=g;
+    });
+    c.update('none');
+  });
+}
+function gmToggleTheme(){
+  const t=gmTheme()==='dark' ? 'light' : 'dark';
+  try{ localStorage.setItem('gm_theme', t); }catch(e){}
+  gmApplyTheme(t);
+  // สีของชุดข้อมูลในกราฟเปลี่ยนตามธีมด้วย → วาดกราฟที่เปิดอยู่ใหม่จากข้อมูลที่โหลดไว้ (ไม่ดึงซ้ำ)
+  const pg=document.querySelector('.pg.on')?.id;
+  try{
+    if(pg==='pg-main' && _mainRows){ mfDestroy(); _drawMainCharts(_mainRows); }
+    else if(pg==='pg-sys' && curTab==='dash' && Array.isArray(_sdRows) && document.getElementById('sd-charts')?.children.length) drawCharts(curSys,_sdRows);
+    else gmRecolorCharts();
+  }catch(e){ console.warn('recolor:',e.message); gmRecolorCharts(); }
+}
+
 // ── Admin: เมนูย่อย (หน้าละหัวข้อ) ──
 const ADM_PAGES = [
   {g:'ภาพรวม'},
@@ -2167,6 +2241,7 @@ async function loadMain(){
       SUPA+'/rest/v1/inspection_records?select=system_type,recorded_at,status,inspector'+q);
     if(mxSeq!==_mxSeq) return;   // มีการโหลดใหม่ซ้อนแล้ว — ไม่วาดทับ
 
+    _mainRows=chartRows;
     _drawMainCharts(chartRows);
     renderInspStats(chartRows, capped);
 
@@ -2198,9 +2273,9 @@ async function loadMain(){
 // ── วาดกราฟ 4 แบบ ──────────────────────────────────────────────────────
 function _drawMainCharts(rows){
   const co={responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{font:{size:10},color:'#6b7f96'}}},
-    scales:{x:{ticks:{color:'#6b7f96',font:{size:9},maxTicksLimit:10},grid:{color:'#e8eef5'}},
-            y:{ticks:{color:'#6b7f96',font:{size:9}},grid:{color:'#e8eef5'}}}};
+    plugins:{legend:{labels:{font:{size:10},color:gmCssVar('--muted')}}},
+    scales:{x:{ticks:{color:gmCssVar('--muted'),font:{size:9},maxTicksLimit:10},grid:{color:gmCssVar('--chart-grid')}},
+            y:{ticks:{color:gmCssVar('--muted'),font:{size:9}},grid:{color:gmCssVar('--chart-grid')}}}};
 
   // รวบรวมข้อมูลจาก rows
   const byDate={}, sysCount={}, sysAlert={}, byDateAlert={};
@@ -2219,14 +2294,16 @@ function _drawMainCharts(rows){
 
   const dates=Object.keys(byDate).sort().slice(-60);
   const sysKeys=gmSysKeys();
-  const COLORS=['#1a6fbd','#0891b2','#0f766e','#7c3aed','#92400e','#0369a1','#1d4ed8','#dc2626','#b07d00'];
+  const COLORS = gmTheme()==='dark'
+    ? ['#58a6ff','#22d3ee','#2dd4bf','#a78bfa','#f59e0b','#38bdf8','#818cf8','#f87171','#e3b341']
+    : ['#1a6fbd','#0891b2','#0f766e','#7c3aed','#92400e','#0369a1','#1d4ed8','#dc2626','#b07d00'];
 
   // A — รายการตรวจต่อวัน
   const ctxA=document.getElementById('mc-ch-daily');
   if(ctxA) mfCharts.A=new Chart(ctxA,{type:'bar',
     data:{labels:dates.map(d=>d.slice(5)),
       datasets:[{label:'รายการ',data:dates.map(d=>byDate[d]||0),
-        backgroundColor:'rgba(26,111,189,.35)',borderColor:'#1a6fbd',borderWidth:1}]},
+        backgroundColor:'rgba(26,111,189,.35)',borderColor:gmCssVar('--chart-blue'),borderWidth:1}]},
     options:{...co,plugins:{...co.plugins,legend:{display:false}}}});
 
   // B — แนวโน้ม Alert
@@ -2234,7 +2311,7 @@ function _drawMainCharts(rows){
   if(ctxB) mfCharts.B=new Chart(ctxB,{type:'line',
     data:{labels:dates.map(d=>d.slice(5)),
       datasets:[{label:'Alert',data:dates.map(d=>byDateAlert[d]||0),
-        borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,.15)',
+        borderColor:gmCssVar('--chart-red'),backgroundColor:'rgba(192,57,43,.15)',
         tension:.3,pointRadius:2,borderWidth:2,fill:true}]},
     options:{...co,plugins:{...co.plugins,legend:{display:false}}}});
 
@@ -2245,7 +2322,7 @@ function _drawMainCharts(rows){
   if(ctxC) mfCharts.C=new Chart(ctxC,{type:'doughnut',
     data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:sysKeys.map((k,i)=>COLORS[i%COLORS.length]),borderWidth:1}]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'right',labels:{font:{size:9},color:'#6b7f96',boxWidth:10}}}}});
+      plugins:{legend:{position:'right',labels:{font:{size:9},color:gmCssVar('--muted'),boxWidth:10}}}}});
 
   // D — Alert แต่ละระบบ (bar horizontal)
   const dData=sysKeys.map(k=>sysAlert[k]||0);
@@ -2255,10 +2332,10 @@ function _drawMainCharts(rows){
     data:{labels:dLabels,
       datasets:[{label:'Alert',data:dData,
         backgroundColor:dData.map(v=>v>0?'rgba(192,57,43,.5)':'rgba(200,200,200,.3)'),
-        borderColor:dData.map(v=>v>0?'#c0392b':'#ccc'),borderWidth:1}]},
+        borderColor:dData.map(v=>v>0?gmCssVar('--chart-red'):'#ccc'),borderWidth:1}]},
     options:{...co,indexAxis:'y',
       plugins:{...co.plugins,legend:{display:false}},
-      scales:{x:{...co.scales.x},y:{ticks:{color:'#6b7f96',font:{size:9}},grid:{display:false}}}}});
+      scales:{x:{...co.scales.x},y:{ticks:{color:gmCssVar('--muted'),font:{size:9}},grid:{display:false}}}}});
 }
 
 async function showAllAlerts(){
@@ -2392,10 +2469,10 @@ function drawCharts(sys,rows){
     <div class="cbox"><h4>สถานะรายวัน</h4><div class="ci"><canvas id="ch2"></canvas></div></div>`;
   drawTrend();
 
-  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},color:'#6b7f96'}}},scales:{x:{ticks:{color:'#6b7f96',font:{size:9},maxRotation:45,maxTicksLimit:10},grid:{color:'#e8eef5'}},y:{ticks:{color:'#6b7f96',font:{size:9}},grid:{color:'#e8eef5'}}}};
+  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},color:gmCssVar('--muted')}}},scales:{x:{ticks:{color:gmCssVar('--muted'),font:{size:9},maxRotation:45,maxTicksLimit:10},grid:{color:gmCssVar('--chart-grid')}},y:{ticks:{color:gmCssVar('--muted'),font:{size:9}},grid:{color:gmCssVar('--chart-grid')}}}};
   const byD={};rows.forEach(r=>{const d=bkkDate(r.recorded_at);if(!d)return;if(!byD[d]){byD[d]={ok:0,al:0}}byD[d][r.status==='alert'?'al':'ok']++;});
   const ds=Object.keys(byD).sort().slice(-14);
-  charts.c2=new Chart(document.getElementById('ch2'),{type:'bar',data:{labels:ds.map(d=>d.slice(5)),datasets:[{label:'ปกติ',data:ds.map(d=>byD[d].ok),backgroundColor:'rgba(15,123,62,.25)',borderColor:'#0f7b3e',borderWidth:1},{label:'Alert',data:ds.map(d=>byD[d].al),backgroundColor:'rgba(192,57,43,.25)',borderColor:'#c0392b',borderWidth:1}]},options:{...co,scales:{...co.scales,x:{...co.scales.x,stacked:true},y:{...co.scales.y,stacked:true}}}});
+  charts.c2=new Chart(document.getElementById('ch2'),{type:'bar',data:{labels:ds.map(d=>d.slice(5)),datasets:[{label:'ปกติ',data:ds.map(d=>byD[d].ok),backgroundColor:'rgba(15,123,62,.25)',borderColor:gmCssVar('--chart-green'),borderWidth:1},{label:'Alert',data:ds.map(d=>byD[d].al),backgroundColor:'rgba(192,57,43,.25)',borderColor:gmCssVar('--chart-red'),borderWidth:1}]},options:{...co,scales:{...co.scales,x:{...co.scales.x,stacked:true},y:{...co.scales.y,stacked:true}}}});
 }
 
 function drawTrend(){
@@ -2408,13 +2485,13 @@ function drawTrend(){
     .sort((x,y)=>new Date(x.recorded_at)-new Date(y.recorded_at)).slice(-60);
   const vals=pts.map(r=>Number(r.data[f.k]));
   const out=vals.map(v=>(th.mn!=null&&v<th.mn)||(th.mx!=null&&v>th.mx));
-  const ds=[{label:f.l+(f.u?` (${f.u})`:''),data:vals,borderColor:'#1a6fbd',backgroundColor:'#1a6fbd18',tension:.3,borderWidth:2,fill:true,
-    pointRadius:vals.map((_,i)=>out[i]?4:2),pointBackgroundColor:out.map(o=>o?'#c0392b':'#1a6fbd'),pointBorderColor:out.map(o=>o?'#c0392b':'#1a6fbd')}];
-  const line=(v,l)=>({label:l,data:vals.map(()=>v),borderColor:'#c0392b',borderDash:[6,4],borderWidth:1.5,pointRadius:0,pointHitRadius:0,fill:false,tension:0});
+  const ds=[{label:f.l+(f.u?` (${f.u})`:''),data:vals,borderColor:gmCssVar('--chart-blue'),backgroundColor:'#1a6fbd18',tension:.3,borderWidth:2,fill:true,
+    pointRadius:vals.map((_,i)=>out[i]?4:2),pointBackgroundColor:out.map(o=>o?gmCssVar('--chart-red'):gmCssVar('--chart-blue')),pointBorderColor:out.map(o=>o?gmCssVar('--chart-red'):gmCssVar('--chart-blue'))}];
+  const line=(v,l)=>({label:l,data:vals.map(()=>v),borderColor:gmCssVar('--chart-red'),borderDash:[6,4],borderWidth:1.5,pointRadius:0,pointHitRadius:0,fill:false,tension:0});
   if(th.mn!=null) ds.push(line(th.mn,'เกณฑ์ต่ำสุด '+th.mn));
   if(th.mx!=null) ds.push(line(th.mx,'เกณฑ์สูงสุด '+th.mx));
-  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},color:'#6b7f96',boxWidth:18}}},
-    scales:{x:{ticks:{color:'#6b7f96',font:{size:9},maxRotation:45,maxTicksLimit:8},grid:{color:'#e8eef5'}},y:{ticks:{color:'#6b7f96',font:{size:9}},grid:{color:'#e8eef5'}}}};
+  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},color:gmCssVar('--muted'),boxWidth:18}}},
+    scales:{x:{ticks:{color:gmCssVar('--muted'),font:{size:9},maxRotation:45,maxTicksLimit:8},grid:{color:gmCssVar('--chart-grid')}},y:{ticks:{color:gmCssVar('--muted'),font:{size:9}},grid:{color:gmCssVar('--chart-grid')}}}};
   charts.c1=new Chart(cv,{type:'line',data:{labels:pts.map(r=>fmtTick(r.recorded_at)),datasets:ds},options:co});
   const nOut=out.filter(Boolean).length;
   note.innerHTML = !pts.length ? 'ยังไม่มีข้อมูลหัวข้อนี้ของอาคารนี้'
@@ -3667,7 +3744,7 @@ function gmAskDone(i){
 async function gmConfirmDel(what, detail){
   const v = await gmAsk('⚠️ ยืนยันการลบ',
     `<div style="font-size:14px">ต้องการลบ <b>${what}</b> ใช่ไหม?</div>
-     ${detail?`<div style="background:var(--red-lt);color:var(--red);border:1px solid #f3c6c1;border-radius:6px;padding:10px 12px;margin-top:10px;font-size:12px">${detail}</div>`:''}`,
+     ${detail?`<div style="background:var(--red-lt);color:var(--red);border:1px solid var(--al-bd);border-radius:6px;padding:10px 12px;margin-top:10px;font-size:12px">${detail}</div>`:''}`,
     [{label:'ยกเลิก',val:false},{label:'🗑️ ยืนยันลบ',cls:'btn-d',val:true}]);
   return v===true;
 }
@@ -4597,30 +4674,30 @@ function showFileProtocolWarning(){
   // แสดง overlay แนะนำวิธีเปิดที่ถูกต้อง
   const ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;background:rgba(15,30,50,.85);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,sans-serif';
-  ov.innerHTML=`<div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+  ov.innerHTML=`<div style="background:var(--card);border-radius:16px;padding:32px 28px;max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
     <div style="font-size:36px;text-align:center;margin-bottom:12px">⚠️</div>
-    <h2 style="font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;color:#1a2332">ไม่สามารถเปิดจาก File ตรงได้</h2>
-    <p style="font-size:13px;color:#6b7f96;text-align:center;margin-bottom:20px">Browser บล็อกการเชื่อมต่อ Supabase เมื่อเปิดจาก <code>file://</code></p>
-    <div style="background:#f0f4f8;border-radius:10px;padding:16px;margin-bottom:20px">
-      <div style="font-size:12px;font-weight:700;color:#1a2332;margin-bottom:12px">✅ วิธีเปิดที่ถูกต้อง (เลือก 1 วิธี)</div>
+    <h2 style="font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;color:var(--text)">ไม่สามารถเปิดจาก File ตรงได้</h2>
+    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px">Browser บล็อกการเชื่อมต่อ Supabase เมื่อเปิดจาก <code>file://</code></p>
+    <div style="background:var(--bg3);border-radius:10px;padding:16px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">✅ วิธีเปิดที่ถูกต้อง (เลือก 1 วิธี)</div>
       
-      <div style="margin-bottom:12px;padding:12px;background:#fff;border-radius:8px;border:1px solid #d1dce8">
-        <div style="font-size:12px;font-weight:700;color:#1a6fbd;margin-bottom:4px">🥇 วิธีที่ 1 — VS Code + Live Server (แนะนำ)</div>
-        <div style="font-size:11px;color:#6b7f96">1. ติดตั้ง VS Code → ติดตั้ง Extension "Live Server"<br>
+      <div style="margin-bottom:12px;padding:12px;background:var(--card);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:4px">🥇 วิธีที่ 1 — VS Code + Live Server (แนะนำ)</div>
+        <div style="font-size:11px;color:var(--muted)">1. ติดตั้ง VS Code → ติดตั้ง Extension "Live Server"<br>
         2. คลิกขวาที่ไฟล์ gasmed.html → "Open with Live Server"<br>
         3. จะเปิดที่ http://127.0.0.1:5500/gasmed.html</div>
       </div>
 
-      <div style="margin-bottom:12px;padding:12px;background:#fff;border-radius:8px;border:1px solid #d1dce8">
-        <div style="font-size:12px;font-weight:700;color:#0f7b3e;margin-bottom:4px">🥈 วิธีที่ 2 — Python HTTP Server</div>
-        <div style="font-size:11px;color:#6b7f96">เปิด CMD ในโฟลเดอร์ที่มีไฟล์ แล้วรัน:<br>
-        <code style="background:#f0f4f8;padding:2px 6px;border-radius:4px;font-size:11px">python -m http.server 8080</code><br>
+      <div style="margin-bottom:12px;padding:12px;background:var(--card);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">🥈 วิธีที่ 2 — Python HTTP Server</div>
+        <div style="font-size:11px;color:var(--muted)">เปิด CMD ในโฟลเดอร์ที่มีไฟล์ แล้วรัน:<br>
+        <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:11px">python -m http.server 8080</code><br>
         แล้วเปิด: http://localhost:8080/gasmed.html</div>
       </div>
 
-      <div style="padding:12px;background:#fff;border-radius:8px;border:1px solid #d1dce8">
+      <div style="padding:12px;background:var(--card);border-radius:8px;border:1px solid var(--border)">
         <div style="font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:4px">🥉 วิธีที่ 3 — GitHub Pages (ถาวร)</div>
-        <div style="font-size:11px;color:#6b7f96">อัปโหลดไฟล์ขึ้น GitHub repository<br>
+        <div style="font-size:11px;color:var(--muted)">อัปโหลดไฟล์ขึ้น GitHub repository<br>
         เปิด Settings → Pages → เลือก branch main<br>
         ได้ URL: https://username.github.io/repo/gasmed.html</div>
       </div>
@@ -4796,6 +4873,7 @@ async function ensureToken(){
 setInterval(async ()=>{ if(sessionStorage.getItem(JWT_K)) await ensureToken(); },2*60*1000);   // เช็คทุก 2 นาที → ต่ออายุทันในช่วง 5 นาทีสุดท้าย
 
 // ตรวจ session เมื่อโหลดหน้า
+gmApplyTheme(gmTheme());   // ตั้งไอคอนปุ่มธีมตามธีมปัจจุบัน
 gmRenderSysUI();   // เมนูระบบ Gas เริ่มต้น (ก่อนโหลดการตั้งค่า)
 (function checkLoginGate(){
   const tok=sessionStorage.getItem(JWT_K);
