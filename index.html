@@ -756,7 +756,7 @@ tr:hover td{background:#f6faff}
 
         <div class="admc">
           <h3>⚡ SQL Index — เพิ่มความเร็ว</h3>
-          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">คัดลอก SQL ไปรันใน <a href="https://supabase.com/dashboard/project/ounsxkmbzoojypwzzaan/sql" target="_blank" style="color:var(--blue)">Supabase SQL Editor</a></p>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">คัดลอก SQL ไปรันใน <a href="https://supabase.com/dashboard/project/zapvkgypdyjxbsyppdzc/sql" target="_blank" style="color:var(--blue)">Supabase SQL Editor</a></p>
           <pre id="idx-sql" style="background:var(--bg3);padding:12px;border-radius:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;cursor:pointer;line-height:1.6" onclick="copyIdx()" title="คลิกเพื่อคัดลอก">CREATE INDEX IF NOT EXISTS idx_ir_sys_date
   ON inspection_records(system_type, recorded_at DESC);
 
@@ -884,9 +884,9 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
 // ════════════════════════════════════════════════════════
 //  CONFIG
 // ════════════════════════════════════════════════════════
-const SUPA   = 'https://ounsxkmbzoojypwzzaan.supabase.co';
+const SUPA   = 'https://zapvkgypdyjxbsyppdzc.supabase.co';
 // Publishable key (แทน anon JWT แบบเก่าที่ Supabase จะเลิกใช้) — ส่งใน header apikey เท่านั้น ห้ามใส่ใน Authorization
-const AKEY   = 'sb_publishable_Ua2c25XkCb5AW_36hDLr9A_ztiErPZF';
+const AKEY   = 'sb_publishable_lWy2cGxorUkoGSjOBtDDNw_bLqu7EWs';
 const PIN_K  = 'gm_pin';
 const SES_K  = 'gm_ses';
 let   gmPin      = localStorage.getItem(PIN_K)||'4321'; // cache PIN บันทึกข้อมูล
@@ -2295,7 +2295,7 @@ async function loadAdminStats(){
         </div>
         <div style="background:var(--bg3);border-radius:6px;padding:10px">
           <div style="font-size:10px;color:var(--muted)">Project</div>
-          <div style="font-size:11px;font-weight:600">ounsxkmbzoojypwzzaan</div>
+          <div style="font-size:11px;font-weight:600">zapvkgypdyjxbsyppdzc</div>
           <div style="font-size:10px;color:var(--muted)">Version 3.0</div>
         </div>
       </div>
@@ -3892,7 +3892,8 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
 // Auto-ping ทุก 6 ชั่วโมง — ใช้ anon key เสมอ ไม่ต้องรอ login
 // ป้องกัน Supabase Free Tier pause แม้ยังไม่ได้เข้าระบบ
 (function startKeepalive(){
-  const ping = ()=> fetch(SUPA+'/rest/v1/inspection_records?limit=1',{
+  // ก่อน login อ่านได้เฉพาะ system_types (RLS) — ping ตารางนี้จึงได้ 200 เสมอ
+  const ping = ()=> fetch(SUPA+'/rest/v1/system_types?select=key&limit=1',{
     headers:{'apikey':AKEY}
   }).catch(()=>{});
   ping(); // ping ทันทีที่หน้าโหลด
