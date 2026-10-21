@@ -10,6 +10,7 @@
 <!-- ต้องเปิดผ่าน HTTP server เท่านั้น (localhost หรือ GitHub Pages) ไม่ใช่ file:// -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ── VARIABLES ── */
@@ -284,6 +285,41 @@ tr:hover td{background:#f6faff}
 .mc-box h4{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
 .mc-ci{position:relative;height:160px}
 @media(max-width:860px){.mc-grid{grid-template-columns:1fr}}
+/* ── Dashboard: การตรวจวันนี้ / ค้างผิดปกติ / เกินกำหนด / สถิติ / คาดการณ์ ── */
+.mx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.mx-it{border:1px solid var(--border);border-left:4px solid var(--border);border-radius:var(--r);padding:10px 12px;background:var(--card);min-width:0}
+.mx-it.ok{border-left-color:var(--green)}.mx-it.part{border-left-color:var(--yellow)}.mx-it.none{border-left-color:var(--red)}
+.mx-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer;min-width:0}
+.mx-h span.n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-h b{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;white-space:nowrap}
+.mx-bar{height:6px;background:var(--bg3);border-radius:3px;margin:8px 0 6px;overflow:hidden}
+.mx-bar i{display:block;height:100%;background:var(--green)}
+.mx-it.part .mx-bar i{background:var(--yellow)}
+.mx-it details summary,.mx-sum{font-size:12px;color:var(--muted);cursor:pointer}
+.mx-list{font-size:12px;margin-top:6px;max-height:170px;overflow:auto;line-height:1.7;word-break:break-word}
+.mx-ok{font-size:12px;color:var(--green)}
+.mx-note{font-size:11px;color:var(--muted);padding:8px 14px;border-top:1px solid var(--bg3)}
+.mx-cnt{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.sec-h .mx-cnt+.tog{margin-left:8px}
+.mx-due{border-bottom:1px solid var(--bg3);padding:9px 14px}
+.mx-due:last-child{border-bottom:0}
+.mx-due summary{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;list-style:none}
+.mx-due summary::-webkit-details-marker{display:none}
+.mx-due summary .mx-cnt{color:var(--red)}
+.mx-days{font-family:'IBM Plex Mono',monospace;font-weight:600}
+.cb-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.cb-h h4{margin:0 auto 0 0}
+.cb-sel{font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);max-width:180px;font-family:inherit}
+.cb-n{font-size:11px;color:var(--muted);margin-top:6px;min-height:14px}
+.tp-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:7px}
+.tp-l{flex:0 0 38%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp-b{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;min-width:40px}
+.tp-b i{display:block;height:100%;background:var(--red);opacity:.75}
+.tp-n{flex:0 0 auto;font-family:'IBM Plex Mono',monospace;font-weight:600;min-width:28px;text-align:right}
+.tp-d{font-size:11px;color:var(--muted);margin:-4px 0 8px calc(38% + 8px)}
+.tp-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.tp-grid h5{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px}
+@media(max-width:768px){.tp-grid{grid-template-columns:1fr}.tp-l{flex-basis:45%}.tp-d{margin-left:0}.cb-sel{max-width:none;flex:1 1 45%}.mx-grid{grid-template-columns:1fr}}
 
 /* ── MOBILE ── */
 .fv-dt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -635,7 +671,8 @@ tr:hover td{background:#f6faff}
           <select id="mf-sys" onchange="loadMain()" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px;height:30px;outline:none">
             <option value="">ทุกระบบ</option>
           </select>
-          <button class="btn btn-o btn-sm" onclick="mfQuick('today')" style="margin-left:auto">↺ รีเซ็ต</button>
+          <button class="btn btn-o btn-sm" onclick="gmRepOpen()" style="margin-left:auto">📄 รายงานรายเดือน</button>
+          <button class="btn btn-o btn-sm" onclick="mfQuick('today')">↺ รีเซ็ต</button>
         </div>
 
         <!-- ── Stat Cards ── -->
@@ -643,7 +680,25 @@ tr:hover td{background:#f6faff}
           <div class="sc b"><div class="sc-l">บันทึกทั้งหมด</div><div class="sc-v b" id="mc-tot">—</div><div class="sc-s" id="mc-tot-s">ทุกระบบ</div></div>
           <div class="sc g"><div class="sc-l">วันนี้</div><div class="sc-v g" id="mc-day">—</div><div class="sc-s">รายการตรวจ</div></div>
           <div class="sc r"><div class="sc-l">Alert</div><div class="sc-v r alert-clickable" id="mc-al" onclick="showAllAlerts()" title="คลิกดูทั้งหมด">—</div><div class="sc-s" id="mc-al-s">ค่าผิดปกติ (คลิกดูได้)</div></div>
-          <div class="sc y"><div class="sc-l">ระบบ Gas</div><div class="sc-v y">9</div><div class="sc-s">ระบบทั้งหมด</div></div>
+          <div class="sc y"><div class="sc-l">ระบบ Gas</div><div class="sc-v y" id="mc-sys">—</div><div class="sc-s">ระบบที่เปิดใช้งาน</div></div>
+        </div>
+
+        <!-- ── การตรวจวันนี้ (ไม่ขึ้นกับช่วงวันที่ที่เลือก) ── -->
+        <div class="sec">
+          <div class="sec-h" onclick="togSec(this)"><h3>📋 การตรวจวันนี้</h3><span class="mx-cnt" id="mx-cov-s"></span><span class="tog">▼</span></div>
+          <div class="sec-b" id="mx-cov"><div style="color:var(--muted)"><span class="spin"></span> กำลังโหลด…</div></div>
+        </div>
+
+        <!-- ── ยังผิดปกติอยู่ตอนนี้ (ผลตรวจครั้งล่าสุดของจุดนั้นเป็น Alert) ── -->
+        <div class="sec">
+          <div class="sec-h" onclick="togSec(this)"><h3>🔴 ยังผิดปกติอยู่ตอนนี้</h3><span class="mx-cnt" id="mx-open-s"></span><span class="tog">▼</span></div>
+          <div class="sec-b" style="padding:0"><div class="tw"><table><thead><tr><th>ระบบ</th><th>อาคาร / จุด</th><th>ผลล่าสุดเมื่อ</th><th>ค้างมา</th><th>ผู้ตรวจ</th><th>หมายเหตุ</th></tr></thead><tbody id="mx-open"></tbody></table></div><div class="mx-note" id="mx-open-n" style="display:none"></div></div>
+        </div>
+
+        <!-- ── ไม่ได้ตรวจเกินกำหนด ── -->
+        <div class="sec">
+          <div class="sec-h" onclick="togSec(this)"><h3>⏰ ไม่ได้ตรวจเกินกำหนด</h3><span class="mx-cnt" id="mx-due-s"></span><span class="tog">▼</span></div>
+          <div class="sec-b" style="padding:0"><div id="mx-due"></div><div class="mx-note">กำหนดจำนวนวันของแต่ละระบบได้ที่ Admin → "📅 ความถี่การตรวจ"</div></div>
         </div>
 
         <!-- ── Charts 4 แบบ ── -->
@@ -658,6 +713,12 @@ tr:hover td{background:#f6faff}
         <div class="sec">
           <div class="sec-h" onclick="togSec(this)"><h3>🏥 ภาพรวมทุกระบบ</h3><span class="tog">▼</span></div>
           <div class="sec-b"><div class="sys-grid" id="main-sys"></div></div>
+        </div>
+
+        <!-- ── สถิติผู้ตรวจ (ตามช่วงวันที่/ระบบที่เลือก) ── -->
+        <div class="sec">
+          <div class="sec-h" onclick="togSec(this)"><h3>👤 สถิติผู้ตรวจ</h3><span class="mx-cnt" id="mx-insp-s"></span><span class="tog">▼</span></div>
+          <div class="sec-b" style="padding:0"><div class="tw"><table><thead><tr><th>ผู้ตรวจ</th><th>รายการ</th><th>สัดส่วน</th><th>Alert</th><th>ตรวจล่าสุด</th></tr></thead><tbody id="mx-insp"></tbody></table></div></div>
         </div>
 
         <!-- ── Alert ทั้งหมด (expandable) ── -->
@@ -684,6 +745,15 @@ tr:hover td{background:#f6faff}
           <div class="sec">
             <div class="sec-h" onclick="togSec(this)"><h3>🏢 สรุปรายอาคาร — ล่าสุด</h3><span class="tog">▼</span></div>
             <div class="sec-b" style="padding:0"><div class="tw"><table><thead><tr id="sd-bth"></tr></thead><tbody id="sd-btb"></tbody></table></div></div>
+          </div>
+          <div class="sec" id="sd-fc-sec" style="display:none">
+            <div class="sec-h" onclick="togSec(this)"><h3>🔮 คาดการณ์วันเติม / เปลี่ยนถัง</h3><span class="tog">▼</span></div>
+            <div class="sec-b" style="padding:0"><div class="tw"><table><thead><tr><th>อาคาร / ถัง</th><th>หัวข้อ</th><th>ค่าล่าสุด</th><th>ลดลงเฉลี่ย/วัน</th><th>เกณฑ์ต่ำสุด</th><th>คาดว่าถึงเกณฑ์</th></tr></thead><tbody id="sd-fc"></tbody></table></div>
+            <div class="mx-note">ประมาณจากอัตราที่ค่าลดลงตั้งแต่เปลี่ยนถัง/เติมครั้งล่าสุด (ต้องมีอย่างน้อย 3 ครั้ง ห่างกันรวม ≥ 1 วัน) — ใช้เพื่อวางแผนเท่านั้น ค่าจริงขึ้นกับการใช้งาน</div></div>
+          </div>
+          <div class="sec">
+            <div class="sec-h" onclick="togSec(this)"><h3>📉 หัวข้อ / จุดที่ผิดปกติบ่อย</h3><span class="mx-cnt" id="sd-top-s"></span><span class="tog">▼</span></div>
+            <div class="sec-b" id="sd-top"></div>
           </div>
           <div class="sec">
             <div class="sec-h" onclick="togSec(this)"><h3>⚠️ Alert 30 วันล่าสุด</h3><span class="tog">▼</span></div>
@@ -807,6 +877,16 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
           </div>
         </div>
 
+        <!-- ── ความถี่การตรวจ (ใช้กับ Dashboard "ไม่ได้ตรวจเกินกำหนด") ── -->
+        <div class="admc">
+          <h3>📅 ความถี่การตรวจ</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+            กำหนดว่าแต่ละระบบต้องตรวจอย่างน้อยทุกกี่วัน — จุดที่ไม่ได้ตรวจนานกว่านี้จะขึ้นใน Dashboard หัวข้อ "⏰ ไม่ได้ตรวจเกินกำหนด"
+          </p>
+          <div class="gm-list" id="gm-due-list"><div class="gm-empty">กำลังโหลด…</div></div>
+          <button class="btn btn-p btn-sm" id="gm-due-save" onclick="gmSaveDue()">💾 บันทึกความถี่</button>
+        </div>
+
         <!-- ── ผู้ตรวจสอบ ── -->
         <div class="admc">
           <h3>👤 จัดการรายชื่อผู้ตรวจสอบ</h3>
@@ -857,6 +937,51 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
           </div>
           <div style="font-size:11px;color:var(--muted);margin-bottom:8px">💡 เลือกอาคารเพื่อกรอง หรือแสดงทั้งหมด — เลื่อน ▲▼ เพื่อจัดลำดับ</div>
           <div class="gm-list" id="gm-fl-list"><div class="gm-empty">กำลังโหลด…</div></div>
+        </div>
+
+        <!-- ── สำรองข้อมูล ── -->
+        <div class="admc">
+          <h3>💾 สำรองข้อมูล</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:8px">
+            ดาวน์โหลดข้อมูลทุกตารางเก็บไว้ (บันทึกการตรวจ, Archive, อาคาร/ชั้น, ผู้ตรวจ, ตั้งค่า) — ไม่รวม PIN<br>
+            Excel เปิดดูง่าย / JSON เก็บข้อมูลครบทุกฟิลด์ใช้กู้คืน — แนะนำสำรองเดือนละครั้ง เก็บไว้นอกเครื่องนี้ (เช่น Google Drive)
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <button class="btn btn-p btn-sm gm-bk-btn" onclick="gmBackup('xlsx')">📊 สำรองเป็น Excel</button>
+            <button class="btn btn-o btn-sm gm-bk-btn" onclick="gmBackup('json')">🧾 สำรองเป็น JSON</button>
+          </div>
+          <div id="gm-bk-last" style="font-size:12px;color:var(--muted)"></div>
+          <div id="gm-bk-st" style="font-size:12px;margin-top:4px;word-break:break-word"></div>
+        </div>
+
+        <!-- ── QR ต่อจุดตรวจ ── -->
+        <div class="admc">
+          <h3>🔳 QR Code ต่อจุดตรวจ</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+            สร้างแผ่น QR ให้พิมพ์ติดที่จุดตรวจ — สแกนแล้วเปิดหน้าบันทึกของระบบ/อาคาร/ชั้นนั้นทันที (ยังต้องกรอก PIN บันทึกข้อมูลก่อนบันทึก)
+          </p>
+          <div class="gm-add-row" style="margin-bottom:8px">
+            <select class="fc" id="gm-qr-sys" style="max-width:220px"></select>
+            <input type="text" class="fc" id="gm-qr-base" placeholder="https://..." style="max-width:380px" title="ที่อยู่เว็บของแอป">
+            <button class="btn btn-p btn-sm" onclick="gmQrRun()">🖨️ สร้างแผ่น QR</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted)">💡 จุดตรวจอ้างอิงจากอาคาร/ชั้นที่เปิดใช้งานในหน้านี้ — เพิ่มหรือเปลี่ยนชื่อแล้วต้องพิมพ์ QR ใหม่</div>
+        </div>
+      </div>
+
+      <!-- รายงานรายเดือน -->
+      <div class="ovl h" id="ov-rep">
+        <div style="background:#fff;border-radius:12px;padding:22px;width:340px;box-shadow:var(--sh2)">
+          <h3 style="font-size:14px;margin-bottom:12px">📄 รายงานประจำเดือน (PDF)</h3>
+          <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">เดือน</label>
+          <input type="month" class="fc" id="rep-month" style="margin-bottom:10px">
+          <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">ระบบ</label>
+          <select class="fc" id="rep-sys" style="margin-bottom:14px"></select>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-p btn-sm" onclick="gmRepRun()">สร้างรายงาน</button>
+            <button class="btn btn-o btn-sm" onclick="gmRepClose()">ปิด</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:10px">เปิดในหน้าใหม่ แล้วกด "พิมพ์ / บันทึก PDF" เลือก Save as PDF</div>
         </div>
       </div>
 
@@ -1302,11 +1427,13 @@ function openAdmin(){
     document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
     document.getElementById('ni-admin')?.classList.add('on');
     loadAdminStats();
-    await Promise.all([gmLoadAll(true), gmLoadSystems()]);   // ข้อมูลล่าสุด ป้องกันนำเข้าซ้ำเมื่อเครื่องอื่นนำเข้าไปแล้ว
+    await Promise.all([gmLoadAll(true), gmLoadSystems(), gmLoadDashCfg(true)]);   // ข้อมูลล่าสุด ป้องกันนำเข้าซ้ำเมื่อเครื่องอื่นนำเข้าไปแล้ว
     await gmAutoImport();   // นำเข้าค่าเริ่มต้นของกลุ่มที่ยังไม่เคยนำเข้า (ครั้งเดียว)
     gmRenderInspectors();
     gmRenderBuildings();
     gmPopulateFloorBldSelect();
+    gmRenderDue();
+    gmBkInit(); gmQrInit();
   };
   _pinMode='admin';
   _showPin('🔧','Admin PIN','กรอก PIN Admin เพื่อเข้าจัดการระบบ',true);
@@ -1350,7 +1477,11 @@ async function init(){
   gmLoadAll().catch(()=>{});
 
   // URL routing (QR link)
-  if(sys&&SYS[sys]){
+  if(sys&&SYS[sys]&&p.get('form')==='1'){
+    // QR ต่อจุดตรวจ: เปิดหน้าบันทึกของระบบนี้ (ผ่าน PIN) พร้อมเลือกอาคาร/ชั้นให้
+    _qrPre={sys, bld:p.get('bld')||'', floor:p.get('floor')||''};
+    goSys(sys); goTab('form');
+  } else if(sys&&SYS[sys]){
     goSys(sys); _showTab('data');
     setTimeout(()=>{
       const bld=p.get('bld'), from=p.get('from'), to=p.get('to');
@@ -1442,8 +1573,448 @@ function mfDestroy(){
 // ════════════════════════════════════════════════════════
 //  MAIN DASHBOARD — ใช้ aggregate query (ไม่ดึงข้อมูลทั้งหมด)
 // ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+//  DASHBOARD EXTRAS — การตรวจวันนี้ / ยังผิดปกติ / เกินกำหนด / สถิติผู้ตรวจ
+//  "จุด" = ระบบ + อาคาร (Area Alarm = อาคาร + ชั้น/แผนก) ตามรายชื่อที่เปิดใช้ใน Admin
+// ════════════════════════════════════════════════════════
+// GM_FAIL (คำที่ถือว่าผิดปกติ) ประกาศไว้แล้วในส่วนตัวสร้างแบบฟอร์ม — ใช้ร่วมกับ calcStatus / gmFieldBad
+const GM_DUE_DEF = 7;                 // ค่าเริ่มต้น: ต้องตรวจอย่างน้อยทุก 7 วัน (แก้ได้ใน Admin)
+const GM_UNIT_SEP = '\u0001';
+let gmDashCfg = {due:{}}, gmDashCfgRow = false, gmDashLoaded = false;
+let gmLatestRpc = true;               // false = ยังไม่ได้ติดตั้งฟังก์ชัน gm_latest_per_unit → ใช้วิธีสำรอง
+let _mxSeq = 0;
+
+function bkkDate(ts){ return ts ? new Date(ts).toLocaleDateString('sv-SE',{timeZone:'Asia/Bangkok'}) : ''; }
+function bkkToday(){ return bkkDate(Date.now()); }
+function dayDiff(a,b){ return Math.round((Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/864e5); }   // a − b (วัน)
+function gmDue(k){ const n=Number(gmDashCfg.due?.[k]); return Number.isInteger(n) && n>=1 && n<=365 ? n : GM_DUE_DEF; }
+const gmUnitKey = (sys,b,f) => sys+GM_UNIT_SEP+b+GM_UNIT_SEP+(f||'');
+
+// จุดที่ต้องตรวจของระบบ (เฉพาะที่เปิดใช้งาน)
+function gmUnits(sys){
+  if(sys==='area_alarm')
+    return gmGetBuildings(sys).flatMap(b=>gmGetFloors(b).map(f=>({b, f, key:gmUnitKey(sys,b,f), label:b+' · '+f})));
+  return gmGetBuildings(sys).map(b=>({b, f:'', key:gmUnitKey(sys,b,''), label:b}));
+}
+
+async function gmLoadDashCfg(force=false){
+  if(gmDashLoaded && !force) return;
+  try{
+    const r=await fetch(SUPA+'/rest/v1/gm_config?key=eq.gm_dash&select=key,value',{headers:getH()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    gmDashCfgRow = Array.isArray(d) && d.length>0;
+    let v = gmDashCfgRow ? d[0].value : null;
+    if(typeof v==='string') v=JSON.parse(v);
+    gmDashCfg = {due:(v && typeof v.due==='object' && v.due) ? v.due : {}};
+    gmDashLoaded = true;
+  }catch(e){ console.warn('gm_dash:', e.message); }
+}
+async function gmSaveDashCfg(cfg){
+  if(!gmDashLoaded) await gmLoadDashCfg(true);
+  if(!gmDashLoaded) throw new Error('ยังโหลดการตั้งค่าเดิมไม่สำเร็จ — ลองใหม่อีกครั้ง');
+  const value=JSON.stringify({v:1, due:cfg.due});
+  const r = gmDashCfgRow
+    ? await fetch(SUPA+'/rest/v1/gm_config?key=eq.gm_dash',{method:'PATCH',headers:getH({'Prefer':'return=representation'}),body:JSON.stringify({value})})
+    : await fetch(SUPA+'/rest/v1/gm_config',{method:'POST',headers:getH({'Prefer':'return=representation'}),body:JSON.stringify({key:'gm_dash',value})});
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||('HTTP '+r.status)); }
+  const rows=await r.json().catch(()=>null);
+  if(Array.isArray(rows) && !rows.length) throw new Error('ไม่มีสิทธิ์บันทึกการตั้งค่า');
+  gmDashCfgRow=true;
+  gmDashCfg={due:{...cfg.due}};
+}
+
+// ผลตรวจครั้งล่าสุดของทุกจุด — ใช้ฟังก์ชันในฐานข้อมูล (ถูกต้องทุกช่วงเวลา, ส่งข้อมูลน้อย)
+// ถ้ายังไม่ได้ติดตั้ง → คำนวณจาก 1,000 รายการล่าสุดแทน
+async function gmFetchLatest(){
+  if(gmLatestRpc){
+    try{
+      const r=await fetch(SUPA+'/rest/v1/rpc/gm_latest_per_unit',{method:'POST',headers:getH(),body:'{}'});
+      if(r.ok){ const d=await r.json(); if(Array.isArray(d)) return {rows:d, exact:true}; }
+      else if(r.status===404) gmLatestRpc=false;
+    }catch(_){ /* ใช้วิธีสำรอง */ }
+  }
+  const r=await fetch(SUPA+'/rest/v1/inspection_records?select=id,system_type,building,status,recorded_at,inspector,note,floor_location:data->>floor_location'
+    +'&order=recorded_at.desc,id.desc&limit=1000',{headers:getH()});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const seen=new Set(), out=[];
+  (await r.json()).forEach(x=>{ const k=gmUnitKey(x.system_type,x.building,x.floor_location); if(!seen.has(k)){ seen.add(k); out.push(x); } });
+  return {rows:out, exact:false};
+}
+
+// ดึงทีละ 1,000 แถว (Supabase ส่งได้ครั้งละไม่เกิน 1,000) — เรียงใหม่→เก่า แล้วกลับเป็นเก่า→ใหม่
+async function gmFetchPaged(url, cap=10000){
+  const out=[];
+  for(let off=0; off<cap; off+=1000){
+    const r=await fetch(url+'&order=recorded_at.desc,id.desc&limit=1000&offset='+off,{headers:getH()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    out.push(...d);
+    if(d.length<1000) return {rows:out.reverse(), capped:false};
+  }
+  return {rows:out.reverse(), capped:true};
+}
+
+async function loadMainExtras(seq){
+  const cov=document.getElementById('mx-cov'), op=document.getElementById('mx-open'), du=document.getElementById('mx-due');
+  try{
+    await Promise.all([gmLoadAll(), gmLoadDashCfg()]);
+    const {rows, exact} = await gmFetchLatest();
+    if(seq!==_mxSeq) return;                         // มีการโหลดใหม่ซ้อนแล้ว — ทิ้งผลนี้
+    const latest=new Map(rows.map(x=>[gmUnitKey(x.system_type,x.building,x.floor_location), x]));
+    const today=bkkToday();
+    const keys=gmSysKeys().filter(k=>!mfSys || k===mfSys);
+    const units={}; keys.forEach(k=>units[k]=gmUnits(k));
+
+    // ── 1) การตรวจวันนี้ ──
+    let allN=0, allDone=0;
+    cov.innerHTML = keys.length ? '<div class="mx-grid">'+keys.map(k=>{
+      const s=SYS[k], us=units[k];
+      const done=us.filter(u=>bkkDate(latest.get(u.key)?.recorded_at)===today), miss=us.filter(u=>!done.includes(u));
+      allN+=us.length; allDone+=done.length;
+      const cls=!us.length?'':(miss.length===0?'ok':(done.length?'part':'none'));
+      const pct=us.length?Math.round(done.length/us.length*100):0;
+      const body=!us.length
+        ? '<div class="mx-sum">ยังไม่ได้ตั้งรายชื่ออาคาร (Admin → จัดการอาคาร)</div>'
+        : miss.length===0 ? '<div class="mx-ok">✅ ตรวจครบแล้ว</div>'
+        : `<details><summary>ยังไม่ได้ตรวจ ${miss.length} จุด</summary><div class="mx-list">${miss.map(u=>'• '+gmH(u.label)).join('<br>')}</div></details>`;
+      return `<div class="mx-it ${cls}"><div class="mx-h" onclick="goSys('${k}')"><span>${s.ic}</span><span class="n">${gmH(s.l)}</span><b>${done.length}/${us.length}</b></div>
+        <div class="mx-bar"><i style="width:${pct}%"></i></div>${body}</div>`;
+    }).join('')+'</div>' : '<div class="mx-sum">ไม่มีระบบที่เปิดใช้งาน</div>';
+    document.getElementById('mx-cov-s').textContent = allN ? `ตรวจแล้ว ${allDone}/${allN} จุด` : '';
+
+    // ── 2) ยังผิดปกติอยู่ตอนนี้ ── (ผลตรวจครั้งล่าสุดของจุดนั้น = Alert)
+    const open=[];
+    keys.forEach(k=>units[k].forEach(u=>{ const x=latest.get(u.key); if(x && x.status==='alert') open.push({k,u,x}); }));
+    open.sort((a,b)=>new Date(a.x.recorded_at)-new Date(b.x.recorded_at));   // ค้างนานสุดขึ้นก่อน
+    op.innerHTML = open.length ? open.map(({k,u,x})=>{
+      const d=dayDiff(today,bkkDate(x.recorded_at));
+      return `<tr><td style="white-space:nowrap">${SYS[k].ic} ${gmH(SYS[k].l)}</td><td><b>${gmH(u.label)}</b></td>
+        <td style="color:var(--muted);font-size:11px;white-space:nowrap">${fmtDate(x.recorded_at)}</td>
+        <td class="mx-days" style="color:var(--red)">${d<=0?'วันนี้':d+' วัน'}</td>
+        <td style="color:var(--muted)">${gmH(x.inspector||'—')}</td><td style="color:var(--muted)">${gmH(x.note||'—')}</td></tr>`;
+    }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--green);padding:16px">✅ ไม่มีจุดที่ผิดปกติค้างอยู่</td></tr>';
+    document.getElementById('mx-open-s').textContent = open.length ? `${open.length} จุด` : '';
+    const on=document.getElementById('mx-open-n');
+    on.style.display = exact ? 'none' : '';
+    on.textContent = exact ? '' : 'คำนวณจาก 1,000 รายการล่าสุด — ติดตั้งฟังก์ชัน gm_latest_per_unit ในฐานข้อมูลเพื่อให้ครบทุกช่วงเวลา';
+
+    // ── 3) ไม่ได้ตรวจเกินกำหนด ──
+    let dueTot=0;
+    const dueHtml=keys.map(k=>{
+      const lim=gmDue(k);
+      const over=units[k].map(u=>{ const x=latest.get(u.key); const d=x?dayDiff(today,bkkDate(x.recorded_at)):null; return {u,x,d}; })
+        .filter(o=>o.d===null || o.d>lim)
+        .sort((a,b)=>(b.d??1e9)-(a.d??1e9));
+      if(!over.length) return '';
+      dueTot+=over.length;
+      const never=exact?'ยังไม่เคยมีบันทึก':'ไม่พบใน 1,000 รายการล่าสุด';
+      return `<details class="mx-due"><summary><span>${SYS[k].ic}</span><b>${gmH(SYS[k].l)}</b><span style="font-size:11px;color:var(--muted)">ต้องตรวจทุก ${lim} วัน</span><span class="mx-cnt">เกิน ${over.length} จุด ▾</span></summary>
+        <div class="mx-list">${over.map(o=>`• ${gmH(o.u.label)} — ${o.d===null?`<span style="color:var(--muted)">${never}</span>`:`<span class="mx-days" style="color:var(--red)">${o.d} วัน</span> <span style="color:var(--muted)">(ล่าสุด ${fmtDate(o.x.recorded_at)})</span>`}`).join('<br>')}</div></details>`;
+    }).join('');
+    du.innerHTML = dueTot ? dueHtml : '<div style="text-align:center;color:var(--green);padding:16px;font-size:13px">✅ ทุกจุดตรวจตามกำหนด</div>';
+    document.getElementById('mx-due-s').textContent = dueTot ? `${dueTot} จุด` : '';
+  }catch(e){
+    if(seq!==_mxSeq) return;
+    const msg=`<div style="color:var(--red);font-size:12px">โหลดไม่สำเร็จ: ${gmH(e.message)}</div>`;
+    cov.innerHTML=msg; du.innerHTML=msg; op.innerHTML=`<tr><td colspan="6">${msg}</td></tr>`;
+  }
+}
+
+// ── สถิติผู้ตรวจ (ใช้ข้อมูลชุดเดียวกับกราฟ ไม่ดึงเพิ่ม) ──
+function renderInspStats(rows, capped){
+  const m={};
+  rows.forEach(r=>{
+    const n=(r.inspector||'').trim()||'(ไม่ระบุ)';
+    const o=m[n]||(m[n]={n, c:0, al:0, last:null});
+    o.c++; if(r.status==='alert') o.al++;
+    if(!o.last || r.recorded_at>o.last) o.last=r.recorded_at;
+  });
+  const list=Object.values(m).sort((a,b)=>b.c-a.c || a.n.localeCompare(b.n,'th'));
+  const tot=rows.length;
+  document.getElementById('mx-insp').innerHTML = list.length ? list.map(o=>`<tr>
+      <td><b>${gmH(o.n)}</b></td><td class="mono">${o.c.toLocaleString()}</td>
+      <td style="min-width:110px"><div class="tp-row" style="margin:0"><div class="tp-b"><i style="width:${Math.round(o.c/tot*100)}%;background:var(--blue)"></i></div><span class="tp-n">${Math.round(o.c/tot*100)}%</span></div></td>
+      <td class="mono" style="color:${o.al?'var(--red)':'var(--muted)'}">${o.al}</td>
+      <td style="color:var(--muted);font-size:11px;white-space:nowrap">${fmtDate(o.last)}</td></tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">ไม่มีข้อมูลในช่วงนี้</td></tr>';
+  document.getElementById('mx-insp-s').textContent = (list.length?`${list.length} คน · ${tot.toLocaleString()} รายการ`:'')+(capped?' (แสดง 10,000 รายการล่าสุด)':'');
+}
+
+// ── Admin: ความถี่การตรวจ ──
+function gmRenderDue(){
+  const el=document.getElementById('gm-due-list'); if(!el) return;
+  const keys=gmSysKeys();
+  el.innerHTML = keys.length ? keys.map(k=>`<div class="gm-item">
+      <span style="font-size:16px">${SYS[k].ic}</span><span class="gm-name">${gmH(SYS[k].l)}</span>
+      <span style="margin-left:auto;font-size:12px;color:var(--muted)">ตรวจทุก</span>
+      <input type="number" class="fc" id="gm-due-${k}" min="1" max="365" step="1" value="${gmDue(k)}" style="width:76px;text-align:center" inputmode="numeric">
+      <span style="font-size:12px;color:var(--muted)">วัน</span></div>`).join('')
+    : '<div class="gm-empty">ไม่มีระบบที่เปิดใช้งาน</div>';
+}
+async function gmSaveDue(){
+  if(_gmBusy) return;
+  const due={...gmDashCfg.due};
+  for(const k of gmSysKeys()){
+    const v=document.getElementById('gm-due-'+k)?.value.trim();
+    const n=Number(v);
+    if(!Number.isInteger(n) || n<1 || n>365){ toast(`${SYS[k].l}: ใส่จำนวนวันเป็นเลขจำนวนเต็ม 1–365`,'er'); return; }
+    due[k]=n;
+  }
+  const btn=document.getElementById('gm-due-save');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังบันทึก…'; }
+  await gmSysRun(async ()=>{ await gmSaveDashCfg({due}); gmRenderDue(); }, 'บันทึกความถี่การตรวจแล้ว');
+  if(btn){ btn.disabled=false; btn.textContent='💾 บันทึกความถี่'; }
+}
+
+// ════════════════════════════════════════════════════════
+//  สำรองข้อมูล / รายงานรายเดือน (PDF) / QR ต่อจุดตรวจ
+// ════════════════════════════════════════════════════════
+const GM_BK_KEY = 'gm_last_backup';
+// ตารางที่สำรอง — gm_config ไม่รวม PIN (ไม่ให้รหัสไปอยู่ในไฟล์สำรอง)
+const GM_BK_TABLES = [
+  {t:'system_types', o:'key'},
+  {t:'inspection_records', o:'id'},
+  {t:'inspection_records_archive', o:'id'},
+  {t:'gm_inspectors', o:'id'},
+  {t:'gm_buildings', o:'id'},
+  {t:'gm_floors', o:'id'},
+  {t:'gm_config', o:'key', filter:'&key=not.in.(pin,admin_pin)'}
+];
+let _bkBusy = false;
+
+function gmBkInit(){
+  const el=document.getElementById('gm-bk-last'); if(!el) return;
+  let last=''; try{ last=localStorage.getItem(GM_BK_KEY)||''; }catch(e){}
+  if(!last){ el.innerHTML='<span style="color:var(--red)">⚠️ เครื่องนี้ยังไม่เคยสำรองข้อมูล</span>'; return; }
+  const days=dayDiff(bkkToday(), bkkDate(last));
+  el.innerHTML = days>30
+    ? `<span style="color:var(--red)">⚠️ สำรองล่าสุด ${bkkDate(last)} (${days} วันที่แล้ว) — ควรสำรองใหม่</span>`
+    : `สำรองล่าสุดจากเครื่องนี้: ${bkkDate(last)} (${days===0?'วันนี้':days+' วันที่แล้ว'})`;
+}
+
+async function gmBackup(fmt){
+  if(_bkBusy) return;
+  _bkBusy=true;
+  const btns=[...document.querySelectorAll('.gm-bk-btn')]; btns.forEach(b=>b.disabled=true);
+  const st=document.getElementById('gm-bk-st');
+  const say=m=>{ if(st) st.textContent=m; };
+  try{
+    const data={}, counts={}, short=[];
+    for(const {t,o,filter} of GM_BK_TABLES){
+      const out=[];
+      for(let off=0; ; off+=1000){
+        say(`กำลังดึง ${t}… ${out.length.toLocaleString()} แถว`);
+        const r=await fetch(SUPA+'/rest/v1/'+t+'?select=*'+(filter||'')+'&order='+o+'&limit=1000&offset='+off,{headers:getH()});
+        if(!r.ok) throw new Error(t+': HTTP '+r.status);
+        const d=await r.json(); out.push(...d);
+        if(d.length<1000) break;
+      }
+      // ตรวจว่าดึงครบ: เทียบกับจำนวนแถวที่ฐานข้อมูลนับได้
+      const rc=await fetch(SUPA+'/rest/v1/'+t+'?select='+o+(filter||''),{method:'HEAD',headers:getH({'Prefer':'count=exact'})});
+      const m=(rc.headers.get('content-range')||'').match(/\/(\d+)$/);
+      if(m && out.length<Number(m[1])) short.push(`${t} (${out.length}/${m[1]})`);
+      data[t]=out; counts[t]=out.length;
+    }
+    const stamp=bkkDate(Date.now())+'_'+new Date().toLocaleTimeString('sv-SE',{timeZone:'Asia/Bangkok'}).slice(0,5).replace(':','');
+    if(fmt==='json'){
+      const body=JSON.stringify({app:'GasMed', exported_at:new Date().toISOString(), counts, tables:data});
+      dlBlob(new Blob([body],{type:'application/json'}), `GasMed_backup_${stamp}.json`);
+    }else{
+      say('กำลังสร้างไฟล์ Excel…');
+      const wb=XLSX.utils.book_new();
+      for(const {t} of GM_BK_TABLES){
+        const rows=data[t];
+        const cols=[]; rows.forEach(r=>Object.keys(r).forEach(k=>{ if(!cols.includes(k)) cols.push(k); }));
+        const cell=v=>{ if(v===null||v===undefined) return ''; const s=typeof v==='object'?JSON.stringify(v):String(v); return s.length>32000 ? s.slice(0,32000) : s; };
+        const aoa = cols.length ? [cols, ...rows.map(r=>cols.map(c=>cell(r[c])))] : [['(ไม่มีข้อมูล)']];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), t.slice(0,31));
+      }
+      XLSX.writeFile(wb, `GasMed_backup_${stamp}.xlsx`);
+    }
+    try{ localStorage.setItem(GM_BK_KEY, new Date().toISOString()); }catch(e){}
+    gmBkInit();
+    const sum=GM_BK_TABLES.map(({t})=>`${t} ${counts[t].toLocaleString()}`).join(' · ');
+    if(short.length){ say('⚠️ ดึงข้อมูลได้ไม่ครบ: '+short.join(', ')+' — ลองสำรองใหม่อีกครั้ง'); toast('สำรองข้อมูลไม่ครบ ลองใหม่อีกครั้ง','er'); }
+    else { say('✅ สำรองแล้ว: '+sum); toast('สำรองข้อมูลแล้ว','ok'); }
+  }catch(e){
+    say('❌ สำรองไม่สำเร็จ: '+e.message); toast('สำรองไม่สำเร็จ: '+e.message,'er');
+  }finally{
+    _bkBusy=false; btns.forEach(b=>b.disabled=false);
+  }
+}
+
+// ── รายงานประจำเดือน (เปิดหน้าใหม่ → พิมพ์ / บันทึกเป็น PDF) ──
+function gmRepOpen(){
+  const sel=document.getElementById('rep-sys');
+  sel.innerHTML='<option value="">ทุกระบบ</option>'+gmSysKeys().map(k=>`<option value="${k}">${SYS[k].ic} ${gmH(SYS[k].l)}</option>`).join('');
+  const m=document.getElementById('rep-month'); if(!m.value) m.value=bkkToday().slice(0,7);
+  document.getElementById('ov-rep').classList.remove('h');
+}
+function gmRepClose(){ document.getElementById('ov-rep').classList.add('h'); }
+
+async function gmRepRun(){
+  const ym=document.getElementById('rep-month').value, sysSel=document.getElementById('rep-sys').value;
+  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(ym)){ toast('เลือกเดือนก่อน','er'); return; }
+  const w=window.open('','_blank');      // เปิดทันทีตอนคลิก ไม่ให้ browser บล็อก pop-up
+  if(!w){ toast('อนุญาต pop-up ก่อนครับ','er'); return; }
+  w.document.write('<p style="font-family:sans-serif;padding:20px">กำลังสร้างรายงาน…</p>');
+  try{
+    await Promise.all([gmLoadAll(), gmLoadDashCfg()]);
+    const [y,mo]=ym.split('-').map(Number);
+    const nextYm=new Date(Date.UTC(y,mo,1)).toISOString().slice(0,7);
+    const from=new Date(ym+'-01T00:00:00+07:00').toISOString(), to=new Date(nextYm+'-01T00:00:00+07:00').toISOString();
+    const keys=gmSysKeys().filter(k=>!sysSel||k===sysSel);
+    let url=SUPA+'/rest/v1/inspection_records?select=system_type,building,recorded_at,status,inspector,note,floor_location:data->>floor_location'
+      +'&recorded_at=gte.'+encodeURIComponent(from)+'&recorded_at=lt.'+encodeURIComponent(to);
+    if(sysSel) url+='&system_type=eq.'+encodeURIComponent(sysSel);
+    const {rows,capped}=await gmFetchPaged(url);
+
+    const eh=s=>gmH(s==null?'':s);
+    const fdt=ts=>new Date(ts).toLocaleString('th-TH',{timeZone:'Asia/Bangkok',day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const monthTh=new Date(Date.UTC(y,mo-1,15)).toLocaleDateString('th-TH',{month:'long',year:'numeric',timeZone:'UTC'});
+    const rk=r=>gmUnitKey(r.system_type,r.building,r.floor_location);
+
+    const sysRows=keys.map(k=>{
+      const rs=rows.filter(r=>r.system_type===k);
+      const units=gmUnits(k), seen=new Set(rs.map(rk));
+      const miss=units.filter(u=>!seen.has(u.key));
+      const al=rs.filter(r=>r.status==='alert').length;
+      return {k, n:rs.length, al, total:units.length, covered:units.length-miss.length, miss};
+    });
+    const totN=sysRows.reduce((a,s)=>a+s.n,0), totAl=sysRows.reduce((a,s)=>a+s.al,0);
+    const sumHtml=sysRows.map(s=>`<tr><td>${SYS[s.k].ic} ${eh(SYS[s.k].l)}</td><td class="n">${s.n.toLocaleString()}</td>
+      <td class="n ${s.al?'al':''}">${s.al.toLocaleString()}</td><td class="n">${s.n?(s.al/s.n*100).toFixed(1)+'%':'—'}</td>
+      <td class="n">${s.total?`${s.covered}/${s.total} (${Math.round(s.covered/s.total*100)}%)`:'—'}</td></tr>`).join('');
+    // รายการจุดที่ไม่ตรวจ: ถ้ายาวเกิน 12 จุด สรุปเป็นรายอาคาร (จำนวนชั้น/แผนก) ไม่ให้รายงานยืดยาว
+    const missList=s=>{
+      if(s.miss.length<=12) return s.miss.map(u=>eh(u.label)).join(', ');
+      const g=new Map(); s.miss.forEach(u=>g.set(u.b,(g.get(u.b)||0)+1));
+      return [...g.entries()].map(([b,n])=>`${eh(b)} (${n} ${s.k==='area_alarm'?'ชั้น/แผนก':'จุด'})`).join(', ');
+    };
+    const missHtml=sysRows.filter(s=>s.miss.length).map(s=>`<tr><td class="nw">${SYS[s.k].ic} ${eh(SYS[s.k].l)}</td><td>${missList(s)}${s.miss.length>12?` <i style="color:#6b7f96">— รวม ${s.miss.length} จุด</i>`:''}</td></tr>`).join('');
+
+    const alerts=rows.filter(r=>keys.includes(r.system_type) && r.status==='alert').sort((a,b)=>a.recorded_at<b.recorded_at?-1:1);
+    const ALCAP=300;
+    const alHtml=alerts.slice(0,ALCAP).map(r=>`<tr><td class="nw">${eh(fdt(r.recorded_at))}</td><td>${eh(SYS[r.system_type]?.l||r.system_type)}</td>
+      <td>${eh(r.building)}${r.floor_location?' · '+eh(r.floor_location):''}</td><td>${eh(r.inspector)}</td><td>${eh(r.note)}</td></tr>`).join('');
+
+    const insp=new Map();
+    rows.forEach(r=>{ if(!keys.includes(r.system_type)) return; const n=(r.inspector||'—').trim()||'—'; insp.set(n,(insp.get(n)||0)+1); });
+    const inspHtml=[...insp.entries()].sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<tr><td>${eh(n)}</td><td class="n">${c.toLocaleString()}</td></tr>`).join('');
+
+    const scope=sysSel?SYS[sysSel].l:'ทุกระบบ';
+    w.document.open();
+    w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>รายงานประจำเดือน ${eh(monthTh)} — ${eh(scope)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;font-size:12px;color:#1a2332;padding:14mm}
+h1{font-size:20px}h2{font-size:14px;margin:16px 0 6px;border-left:4px solid #1a6fbd;padding-left:8px}
+.sub{color:#6b7f96;margin-top:3px}
+.kpi{display:flex;gap:10px;margin-top:12px}.kpi div{flex:1;border:1px solid #d5dfeb;border-radius:6px;padding:8px 10px}
+.kpi b{display:block;font-size:20px}.kpi span{font-size:11px;color:#6b7f96}
+table{width:100%;border-collapse:collapse}th{background:#1a2f50;color:#fff;text-align:left;padding:4px 6px;font-size:11px}
+td{padding:4px 6px;border-bottom:1px solid #e3eaf3;vertical-align:top}.n{text-align:right;white-space:nowrap}.nw{white-space:nowrap}
+.al{color:#c0392b;font-weight:700}tr{break-inside:avoid}
+.warn{background:#fff4e5;border:1px solid #f0c27a;padding:6px 10px;border-radius:6px;margin-top:10px}
+.sig{display:flex;gap:30px;margin-top:40px;break-inside:avoid}.sig div{flex:1;text-align:center}.sig i{display:block;border-bottom:1px solid #444;height:36px;margin-bottom:4px}
+.pbn{position:fixed;top:8px;right:8px;background:#1a6fbd;color:#fff;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600}
+@media print{.pbn{display:none}@page{size:A4 portrait;margin:12mm}body{padding:0}}
+</style></head><body>
+<button class="pbn" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+<h1>รายงานการตรวจสอบระบบแก๊สทางการแพทย์ ประจำเดือน ${eh(monthTh)}</h1>
+<div class="sub">ขอบเขต: ${eh(scope)} · จัดทำเมื่อ ${eh(new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</div>
+${capped?'<div class="warn">⚠️ ข้อมูลเดือนนี้เกิน 10,000 รายการ รายงานนี้แสดงเฉพาะ 10,000 รายการล่าสุดของเดือน</div>':''}
+<div class="kpi"><div><b>${totN.toLocaleString()}</b><span>รายการตรวจทั้งหมด</span></div>
+<div><b class="${totAl?'al':''}">${totAl.toLocaleString()}</b><span>ผิดปกติ (Alert)${totN?` · ${(totAl/totN*100).toFixed(1)}%`:''}</span></div>
+<div><b>${insp.size.toLocaleString()}</b><span>ผู้ตรวจ</span></div></div>
+<h2>สรุปรายระบบ</h2>
+<table><thead><tr><th>ระบบ</th><th class="n">รายการตรวจ</th><th class="n">Alert</th><th class="n">% Alert</th><th class="n">จุดที่ตรวจแล้ว</th></tr></thead><tbody>${sumHtml||'<tr><td colspan="5">ไม่มีระบบ</td></tr>'}</tbody></table>
+${missHtml?`<h2>จุดที่ไม่มีการตรวจเลยในเดือนนี้</h2><table><tbody>${missHtml}</tbody></table>`:''}
+<h2>รายการผิดปกติ (Alert)${alerts.length>ALCAP?` — แสดง ${ALCAP} จาก ${alerts.length.toLocaleString()} รายการ`:` — ${alerts.length.toLocaleString()} รายการ`}</h2>
+<table><thead><tr><th>วัน-เวลา</th><th>ระบบ</th><th>อาคาร / จุด</th><th>ผู้ตรวจ</th><th>หมายเหตุ</th></tr></thead><tbody>${alHtml||'<tr><td colspan="5" style="text-align:center;color:#6b7f96">ไม่มีรายการผิดปกติในเดือนนี้</td></tr>'}</tbody></table>
+<h2>จำนวนการตรวจแยกตามผู้ตรวจ</h2>
+<table><thead><tr><th>ผู้ตรวจ</th><th class="n">รายการ</th></tr></thead><tbody>${inspHtml||'<tr><td colspan="2" style="text-align:center;color:#6b7f96">ไม่มีข้อมูล</td></tr>'}</tbody></table>
+<div class="sig"><div><i></i>ผู้จัดทำ</div><div><i></i>ผู้ตรวจสอบ</div><div><i></i>หัวหน้าหน่วยงาน</div></div>
+</body></html>`);
+    w.document.close();
+    gmRepClose();
+  }catch(e){
+    try{ w.close(); }catch(_){}
+    toast('สร้างรายงานไม่สำเร็จ: '+e.message,'er');
+  }
+}
+
+// ── QR ต่อจุดตรวจ: สแกนแล้วเปิดฟอร์มบันทึกของจุดนั้น (ยังต้องกรอก PIN บันทึกข้อมูล) ──
+let _qrPre = null;     // {sys, bld, floor} จากลิงก์ QR — ใช้ครั้งเดียวตอนวาดฟอร์มของระบบนั้น
+
+function gmQrInit(){
+  const s=document.getElementById('gm-qr-sys'); if(!s) return;
+  const cur=s.value;
+  s.innerHTML='<option value="">ทุกระบบ</option>'+gmSysKeys().map(k=>`<option value="${k}">${SYS[k].ic} ${gmH(SYS[k].l)}</option>`).join('');
+  s.value=cur;
+  const b=document.getElementById('gm-qr-base'); if(b && !b.value) b.value=location.origin+location.pathname;
+}
+
+function gmQrRun(){
+  if(typeof qrcode!=='function'){ toast('โหลดไลบรารี QR ไม่สำเร็จ — ตรวจอินเทอร์เน็ตแล้วรีเฟรชหน้า','er'); return; }
+  let root;
+  try{ const U=new URL((document.getElementById('gm-qr-base').value||'').trim()); if(!/^https?:$/.test(U.protocol)) throw 0; root=U.origin+U.pathname; }
+  catch(e){ toast('ที่อยู่เว็บไม่ถูกต้อง (ต้องขึ้นต้นด้วย https://)','er'); return; }
+  const sysSel=document.getElementById('gm-qr-sys').value;
+  const items=[];
+  gmSysKeys().filter(k=>!sysSel||k===sysSel).forEach(k=>gmUnits(k).forEach(u=>items.push({k,u})));
+  if(!items.length){ toast('ไม่มีจุดตรวจให้สร้าง QR','er'); return; }
+  const w=window.open('','_blank');
+  if(!w){ toast('อนุญาต pop-up ก่อนครับ','er'); return; }
+  const eh=gmH;
+  const cards=items.map(({k,u})=>{
+    const p=new URLSearchParams({sys:k, bld:u.b, form:'1'}); if(u.f) p.set('floor',u.f);
+    const q=qrcode(0,'M'); q.addData(root+'?'+p.toString()); q.make();
+    return `<div class="c"><div class="s">${SYS[k].ic} ${eh(SYS[k].l)}</div><div class="b">${eh(u.b)}</div><div class="f">${u.f?eh(u.f):'&nbsp;'}</div>
+      <div class="q">${q.createSvgTag({cellSize:4,margin:2,scalable:true})}</div><div class="t">สแกนเพื่อบันทึกการตรวจ</div></div>`;
+  }).join('');
+  w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>QR Code จุดตรวจ</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;color:#1a2332;padding:10mm}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
+.c{border:1.5px dashed #8aa0b8;border-radius:8px;padding:5mm;text-align:center;break-inside:avoid}
+.s{font-size:11px;color:#6b7f96}.b{font-size:15px;font-weight:700;margin-top:2px}.f{font-size:12px;min-height:16px}
+.q{width:42mm;height:42mm;margin:3mm auto}.q svg{width:100%;height:100%}.t{font-size:10px;color:#6b7f96}
+.pbn{position:fixed;top:8px;right:8px;background:#1a6fbd;color:#fff;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600}
+@media print{.pbn{display:none}@page{size:A4 portrait;margin:8mm}body{padding:0}}
+</style></head><body><button class="pbn" onclick="window.print()">🖨️ พิมพ์ QR (${items.length} จุด)</button><div class="g">${cards}</div></body></html>`);
+  w.document.close();
+}
+
+// ใช้ค่าอาคาร/ชั้นจากลิงก์ QR กับฟอร์มที่วาดเสร็จแล้ว — ไม่พบรายการ = แจ้งเตือนแล้วให้เลือกเอง
+function gmApplyQrPre(){
+  const pre=_qrPre; _qrPre=null;
+  if(!pre || !pre.bld || pre.sys!==curSys) return;
+  const miss=()=>toast(`ไม่พบ "${pre.bld}" ในระบบนี้ — กรุณาเลือกเอง`,'er');
+  const sel=document.getElementById('ff-building');
+  if(sel){
+    if(![...sel.options].some(o=>o.value===pre.bld)){ miss(); return; }
+    sel.value=pre.bld;
+    if(curSys==='area_alarm'){
+      onAlBldChange(pre.bld);
+      if(pre.floor){
+        const fs=document.getElementById('ff-floor-sel');
+        if(fs && [...fs.options].some(o=>o.value===pre.floor)){ fs.value=pre.floor; document.getElementById('ff-floor_location').value=pre.floor; }
+        else toast(`ไม่พบชั้น/แผนก "${pre.floor}" — กรุณาเลือกเอง`,'er');
+      }
+    } else onBldSel(pre.bld);
+  } else {
+    if(gmGetBuildings(curSys).includes(pre.bld)) selBld(pre.bld); else miss();
+  }
+}
+
 async function loadMain(){
   mfDestroy();
+  const mxSeq=++_mxSeq;
   // sync sys filter
   mfSys = document.getElementById('mf-sys')?.value||'';
   const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Bangkok'});
@@ -1472,6 +2043,8 @@ async function loadMain(){
     const rLabel = mfFrom&&mfTo ? `${mfFrom} – ${mfTo}` : mfFrom ? `ตั้งแต่ ${mfFrom}` : 'ทุกช่วงเวลา';
     document.getElementById('mc-tot-s').textContent = mfSys ? (SYS[mfSys]?.l||mfSys) : 'ทุกระบบ';
     document.getElementById('mc-al-s').textContent  = rLabel;
+    document.getElementById('mc-sys').textContent   = gmSysKeys().length;
+    loadMainExtras(mxSeq);   // การตรวจวันนี้ / ยังผิดปกติ / เกินกำหนด — โหลดคู่ขนาน
 
     // ── 2. ภาพรวมทุกระบบ — GROUP BY system_type (ไม่ดึง rows ดิบ) ──────
     // ใช้ select=system_type,status + HEAD count ต่อระบบ
@@ -1515,16 +2088,14 @@ async function loadMain(){
       </div>`;
     }).join('');
 
-    // ── 3. กราฟ — ดึงข้อมูลสำหรับ chart ทั้ง 4 แบบ ─────────────────────
-    // ใช้ select=system_type,recorded_at,status — ไม่ดึง data column
-    // limit=2000 รองรับกราฟ 30-60 วัน (วันละ ~67 records × 9 ระบบ)
-    const chartRows = await fetch(
-      SUPA+'/rest/v1/inspection_records?select=system_type,recorded_at,status'
-      +q+'&order=recorded_at.asc&limit=2000',
-      {headers:getH()}
-    ).then(r=>r.json());
+    // ── 3. กราฟ + สถิติผู้ตรวจ — ไม่ดึง data column ───────────────────
+    // ดึงทีละ 1,000 แถว (เกินนี้ Supabase ตัดทิ้งเงียบ ๆ) สูงสุด 10,000 รายการล่าสุด
+    const {rows:chartRows, capped} = await gmFetchPaged(
+      SUPA+'/rest/v1/inspection_records?select=system_type,recorded_at,status,inspector'+q);
+    if(mxSeq!==_mxSeq) return;   // มีการโหลดใหม่ซ้อนแล้ว — ไม่วาดทับ
 
-    _drawMainCharts(chartRows||[]);
+    _drawMainCharts(chartRows);
+    renderInspStats(chartRows, capped);
 
     // ── 4. Alert table — limit 50 ตาม filter ──────────────────────────
     const alRows = await fetch(
@@ -1533,6 +2104,7 @@ async function loadMain(){
       +'&order=recorded_at.desc&limit=50',
       {headers:getH()}
     ).then(r=>r.json());
+    if(mxSeq!==_mxSeq) return;
 
     const alRange = mfFrom||mfTo ? `(${rLabel})` : '(7 วันล่าสุด)';
     document.getElementById('main-al-title').textContent='⚠️ Alert ล่าสุด '+alRange;
@@ -1560,7 +2132,7 @@ function _drawMainCharts(rows){
   // รวบรวมข้อมูลจาก rows
   const byDate={}, sysCount={}, sysAlert={}, byDateAlert={};
   rows.forEach(r=>{
-    const d=r.recorded_at?.slice(0,10); if(!d) return;
+    const d=bkkDate(r.recorded_at); if(!d) return;   // วันที่ตามเวลาไทย (เดิมใช้วันที่ UTC)
     const s=r.system_type;
     // A: รายการต่อวัน
     byDate[d]=(byDate[d]||0)+1;
@@ -1638,6 +2210,7 @@ async function loadSysDash(){
   const sys=curSys;
   document.getElementById('sd-cards').innerHTML='<div style="color:var(--muted);padding:10px"><span class="spin"></span> กำลังโหลด…</div>';
   try{
+    await gmLoadAll();   // รายชื่ออาคารจาก Admin (ใช้กับกราฟ/คาดการณ์) — โหลดครั้งเดียวแล้วใช้ซ้ำ
     const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Bangkok'});
     const todayUTC=new Date(today+'T00:00:00+07:00').toISOString();
     const tmrUTC  =new Date(today+'T23:59:59+07:00').toISOString();
@@ -1672,6 +2245,8 @@ async function loadSysDash(){
       {headers:getH()}).then(r=>r.json());
 
     drawCharts(sys,chartRows||[]);
+    renderForecast(sys,chartRows||[]);
+    renderTopFails(sys,chartRows||[]);
 
     // ── latest per building ──
     const lmap={};
@@ -1706,21 +2281,156 @@ async function loadSysDash(){
 
 function getNumFields(sys){ return (FIELDS[sys]||[]).filter(f=>f.t==='n' && !f.off).slice(0,3); }   // หัวข้อที่ซ่อนไม่มีข้อมูลใหม่ จึงไม่ใช้ในกราฟ
 
+// ── หน้า Dashboard ของแต่ละระบบ: กราฟแนวโน้ม (เลือกอาคาร/หัวข้อ + เส้นเกณฑ์) + สถานะรายวัน ──
+let _sdRows=[], _sdSel={sys:null,b:'',f:''};
+
+// เกณฑ์ของหัวข้อในอาคารนั้น — ใช้หลักเดียวกับ calcStatus (เกณฑ์รายอาคารแทนค่ากลาง)
+function gmThOf(sys,bld,k){ const t=TH[sys]||{}; return ({...(t['*']||{}),...(t[bld]||{})})[k]||null; }
+
+// หัวข้อนี้ผิดปกติไหม: '' | 'low' | 'high' | 'opt' — หลักเดียวกับ calcStatus
+function gmFieldBad(sys,bld,f,v){
+  if(v===null||v===undefined||v==='') return '';
+  if(SYS[sys]?.custom || SYS[sys]?.gen){ if(Array.isArray(f.bad) && f.bad.includes(v)) return 'opt'; }
+  else if(typeof v==='string' && GM_FAIL.test(v)) return 'opt';
+  const c=gmThOf(sys,bld,f.k);
+  if(c){ if(c.mn!=null && v<c.mn) return 'low'; if(c.mx!=null && v>c.mx) return 'high'; }
+  return '';
+}
+
+const fmtTick = ts => new Date(ts).toLocaleString('th-TH',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+
 function drawCharts(sys,rows){
   Object.values(charts).forEach(c=>c.destroy&&c.destroy()); charts={};
-  const nf=getNumFields(sys);
+  _sdRows=rows;
+  const nf=(FIELDS[sys]||[]).filter(f=>f.t==='n' && !f.off);
   const area=document.getElementById('sd-charts');
   if(!nf.length){ area.innerHTML=''; return; }
-  const sorted=[...rows].sort((a,b)=>new Date(a.recorded_at)-new Date(b.recorded_at)).slice(-30);
-  const labels=sorted.map(r=>fmtShort(r.recorded_at));
-  area.innerHTML=`<div class="cbox"><h4>${nf.map(f=>f.l).join(' / ')}</h4><div class="ci"><canvas id="ch1"></canvas></div></div>
+
+  // อาคาร: ที่เปิดใช้ (ตามลำดับ Admin) + ชื่อเดิมที่ยังมีข้อมูล — เลือกอาคารแรกที่มีข้อมูล
+  const has=new Set(rows.map(r=>r.building));
+  const blds=[...gmGetBuildings(sys)]; [...has].forEach(b=>{ if(!blds.includes(b)) blds.push(b); });
+  if(_sdSel.sys!==sys || !blds.includes(_sdSel.b)) _sdSel={sys, b:blds.find(b=>has.has(b))||blds[0]||'', f:''};
+  if(!nf.some(f=>f.k===_sdSel.f)) _sdSel.f=nf[0].k;
+
+  area.innerHTML=`<div class="cbox"><div class="cb-h"><h4>📈 แนวโน้มค่า</h4>
+      <select class="cb-sel" id="sd-cb" onchange="_sdSel.b=this.value;drawTrend()" aria-label="อาคาร">${blds.map(b=>`<option value="${gmH(b)}"${b===_sdSel.b?' selected':''}>${gmH(b)}${has.has(b)?'':' (ไม่มีข้อมูล)'}</option>`).join('')}</select>
+      <select class="cb-sel" id="sd-cf" onchange="_sdSel.f=this.value;drawTrend()" aria-label="หัวข้อ">${nf.map(f=>`<option value="${gmH(f.k)}"${f.k===_sdSel.f?' selected':''}>${gmH(f.l)}</option>`).join('')}</select>
+    </div><div class="ci"><canvas id="ch1"></canvas></div><div class="cb-n" id="sd-cn"></div></div>
     <div class="cbox"><h4>สถานะรายวัน</h4><div class="ci"><canvas id="ch2"></canvas></div></div>`;
+  drawTrend();
+
   const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},color:'#6b7f96'}}},scales:{x:{ticks:{color:'#6b7f96',font:{size:9},maxRotation:45,maxTicksLimit:10},grid:{color:'#e8eef5'}},y:{ticks:{color:'#6b7f96',font:{size:9}},grid:{color:'#e8eef5'}}}};
-  const clrs=['#1a6fbd','#e74c3c','#0f7b3e'];
-  charts.c1=new Chart(document.getElementById('ch1'),{type:'line',data:{labels,datasets:nf.map((f,i)=>({label:f.l,data:sorted.map(r=>r.data?.[f.k]??null),borderColor:clrs[i],backgroundColor:clrs[i]+'18',tension:.3,pointRadius:2,borderWidth:2,fill:i===0}))},options:co});
-  const byD={};rows.forEach(r=>{const d=r.recorded_at?.slice(0,10);if(!d)return;if(!byD[d]){byD[d]={ok:0,al:0}}byD[d][r.status==='alert'?'al':'ok']++;});
+  const byD={};rows.forEach(r=>{const d=bkkDate(r.recorded_at);if(!d)return;if(!byD[d]){byD[d]={ok:0,al:0}}byD[d][r.status==='alert'?'al':'ok']++;});
   const ds=Object.keys(byD).sort().slice(-14);
   charts.c2=new Chart(document.getElementById('ch2'),{type:'bar',data:{labels:ds.map(d=>d.slice(5)),datasets:[{label:'ปกติ',data:ds.map(d=>byD[d].ok),backgroundColor:'rgba(15,123,62,.25)',borderColor:'#0f7b3e',borderWidth:1},{label:'Alert',data:ds.map(d=>byD[d].al),backgroundColor:'rgba(192,57,43,.25)',borderColor:'#c0392b',borderWidth:1}]},options:{...co,scales:{...co.scales,x:{...co.scales.x,stacked:true},y:{...co.scales.y,stacked:true}}}});
+}
+
+function drawTrend(){
+  const sys=curSys, cv=document.getElementById('ch1'), note=document.getElementById('sd-cn');
+  if(!cv) return;
+  if(charts.c1){ try{ charts.c1.destroy(); }catch(_){} delete charts.c1; }
+  const f=(FIELDS[sys]||[]).find(x=>x.k===_sdSel.f); if(!f) return;
+  const b=_sdSel.b, th=gmThOf(sys,b,f.k)||{};
+  const pts=_sdRows.filter(r=>r.building===b && r.data && r.data[f.k]!==null && r.data[f.k]!=='' && r.data[f.k]!==undefined && Number.isFinite(Number(r.data[f.k])))
+    .sort((x,y)=>new Date(x.recorded_at)-new Date(y.recorded_at)).slice(-60);
+  const vals=pts.map(r=>Number(r.data[f.k]));
+  const out=vals.map(v=>(th.mn!=null&&v<th.mn)||(th.mx!=null&&v>th.mx));
+  const ds=[{label:f.l+(f.u?` (${f.u})`:''),data:vals,borderColor:'#1a6fbd',backgroundColor:'#1a6fbd18',tension:.3,borderWidth:2,fill:true,
+    pointRadius:vals.map((_,i)=>out[i]?4:2),pointBackgroundColor:out.map(o=>o?'#c0392b':'#1a6fbd'),pointBorderColor:out.map(o=>o?'#c0392b':'#1a6fbd')}];
+  const line=(v,l)=>({label:l,data:vals.map(()=>v),borderColor:'#c0392b',borderDash:[6,4],borderWidth:1.5,pointRadius:0,pointHitRadius:0,fill:false,tension:0});
+  if(th.mn!=null) ds.push(line(th.mn,'เกณฑ์ต่ำสุด '+th.mn));
+  if(th.mx!=null) ds.push(line(th.mx,'เกณฑ์สูงสุด '+th.mx));
+  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},color:'#6b7f96',boxWidth:18}}},
+    scales:{x:{ticks:{color:'#6b7f96',font:{size:9},maxRotation:45,maxTicksLimit:8},grid:{color:'#e8eef5'}},y:{ticks:{color:'#6b7f96',font:{size:9}},grid:{color:'#e8eef5'}}}};
+  charts.c1=new Chart(cv,{type:'line',data:{labels:pts.map(r=>fmtTick(r.recorded_at)),datasets:ds},options:co});
+  const nOut=out.filter(Boolean).length;
+  note.innerHTML = !pts.length ? 'ยังไม่มีข้อมูลหัวข้อนี้ของอาคารนี้'
+    : `${pts.length} ครั้งล่าสุด · เกณฑ์ ${gmH(th.h||gmRangeTxt({...f,mn:th.mn??null,mx:th.mx??null}))}`+(nOut?` · <span style="color:var(--red)">นอกเกณฑ์ ${nOut} ครั้ง</span>`:'');
+}
+
+// ── หัวข้อ / จุดที่ผิดปกติบ่อย (ตามเกณฑ์ปัจจุบัน จากข้อมูลชุดเดียวกับกราฟ) ──
+function renderTopFails(sys,rows){
+  const el=document.getElementById('sd-top'); if(!el) return;
+  const fs=(FIELDS[sys]||[]).filter(f=>f.t!=='afloor');
+  const fc=fs.map(f=>({f, n:0, d:{}}));
+  const uc={};
+  rows.forEach(r=>{
+    const data=r.data||{};
+    fc.forEach(o=>{
+      const bad=gmFieldBad(sys,r.building,o.f,data[o.f.k]); if(!bad) return;
+      o.n++;
+      const lb = bad==='low' ? 'ต่ำกว่าเกณฑ์' : bad==='high' ? 'สูงกว่าเกณฑ์' : String(data[o.f.k]);
+      o.d[lb]=(o.d[lb]||0)+1;
+    });
+    if(calcStatus(sys,r.building,data)==='alert'){
+      const u=r.building+(sys==='area_alarm'&&data.floor_location?' · '+data.floor_location:'');
+      uc[u]=(uc[u]||0)+1;
+    }
+  });
+  const ft=fc.filter(o=>o.n).sort((a,b)=>b.n-a.n);
+  const ut=Object.entries(uc).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const fMax=ft[0]?.n||1, uMax=ut[0]?.[1]||1;
+  document.getElementById('sd-top-s').textContent = rows.length ? `จาก ${rows.length.toLocaleString()} รายการล่าสุด · ตามเกณฑ์ปัจจุบัน` : '';
+  if(!ft.length){ el.innerHTML='<div style="text-align:center;color:var(--green);font-size:13px;padding:6px">✅ ไม่พบหัวข้อที่ผิดปกติ</div>'; return; }
+  el.innerHTML=`<div class="tp-grid"><div><h5>หัวข้อ</h5>${ft.map(o=>`
+      <div class="tp-row"><span class="tp-l" title="${gmH(o.f.l)}">${gmH(o.f.l)}${o.f.off?' (เดิม)':''}</span><div class="tp-b"><i style="width:${Math.round(o.n/fMax*100)}%"></i></div><span class="tp-n">${o.n}</span></div>
+      <div class="tp-d">${Object.entries(o.d).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${gmH(k)} ${v}`).join(' · ')}</div>`).join('')}</div>
+    <div><h5>จุด (สูงสุด 5 อันดับ)</h5>${ut.map(([u,n])=>`
+      <div class="tp-row"><span class="tp-l" title="${gmH(u)}">${gmH(u)}</span><div class="tp-b"><i style="width:${Math.round(n/uMax*100)}%"></i></div><span class="tp-n">${n}</span></div>`).join('')}</div></div>`;
+}
+
+// ── คาดการณ์วันถึงเกณฑ์ต่ำสุด (ถังแก๊ส / Liquid O2) ──
+const GM_FC = {o2_manifold:['pressure_right','pressure_left'], nitrogen:['pressure_right','pressure_left'],
+  nitrous_oxide:['pressure_right','pressure_left'], co2:['pressure_right','pressure_left'], liquid_o2:['volume']};
+
+// คืน {st, v, slope, mn, eta} — st: 'ok' | 'nomin' | 'few' | 'flat' | 'below'
+function gmForecast(pts, mn){
+  // pts: [{t(ms), v}] เรียงเก่า→ใหม่  — ตัดช่วงก่อน "เติม/เปลี่ยนถัง" (ค่าเพิ่มขึ้นเกิน 10%) ออก
+  let s=0;
+  for(let i=1;i<pts.length;i++) if(pts[i].v - pts[i-1].v > Math.abs(pts[i-1].v)*0.10) s=i;
+  const seg=pts.slice(s), last=pts[pts.length-1];
+  if(mn==null) return {st:'nomin', v:last.v};
+  if(last.v<=mn) return {st:'below', v:last.v, mn};
+  if(seg.length<3 || seg[seg.length-1].t-seg[0].t < 864e5) return {st:'few', v:last.v, mn};
+  const n=seg.length, xs=seg.map(p=>(p.t-seg[0].t)/864e5), ys=seg.map(p=>p.v);
+  const mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+  let num=0, den=0; xs.forEach((x,i)=>{ num+=(x-mx)*(ys[i]-my); den+=(x-mx)**2; });
+  const slope = den ? num/den : 0;                   // หน่วยต่อวัน
+  if(!(slope<0)) return {st:'flat', v:last.v, slope, mn};
+  return {st:'ok', v:last.v, slope, mn, eta:last.t + (last.v-mn)/(-slope)*864e5};
+}
+
+function renderForecast(sys,rows){
+  const sec=document.getElementById('sd-fc-sec'), tb=document.getElementById('sd-fc'); if(!sec||!tb) return;
+  const fs=(GM_FC[sys]||[]).map(k=>(FIELDS[sys]||[]).find(f=>f.k===k && f.t==='n' && !f.off)).filter(Boolean);
+  const blds=gmGetBuildings(sys);
+  if(!fs.length || !blds.length){ sec.style.display='none'; return; }
+  sec.style.display='';
+  const fmtD=t=>new Date(t).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'});
+  const num=v=>Number(v).toLocaleString('th-TH',{maximumFractionDigits:1});
+  const out=[], empty=[];
+  blds.forEach(b=>fs.forEach(f=>{
+    const pts=rows.filter(r=>r.building===b && r.data && r.data[f.k]!==null && r.data[f.k]!=='' && r.data[f.k]!==undefined && Number.isFinite(Number(r.data[f.k])))
+      .map(r=>({t:Date.parse(r.recorded_at), v:Number(r.data[f.k])})).sort((x,y)=>x.t-y.t);
+    const u=f.u?' '+gmH(f.u):'';
+    if(!pts.length){ empty.push(b+(fs.length>1?' ('+f.l+')':'')); return; }
+    const th=gmThOf(sys,b,f.k), r=gmForecast(pts, th?.mn??null);
+    let res;
+    if(r.st==='nomin') res='<span style="color:var(--muted)">ไม่ได้กำหนดเกณฑ์ต่ำสุด</span>';
+    else if(r.st==='below') res='<span class="badge b-al">ต่ำกว่าเกณฑ์แล้ว</span>';
+    else if(r.st==='few') res='<span style="color:var(--muted)">ข้อมูลยังไม่พอ</span>';
+    else if(r.st==='flat') res='<span style="color:var(--green)">ไม่ลดลง</span>';
+    else{
+      const days=(r.eta-Date.now())/864e5;
+      res = days<=0 ? '<span class="badge b-al">ควรถึงเกณฑ์แล้ว — ตรวจซ้ำ</span>'
+        : days>365 ? '<span style="color:var(--green)">มากกว่า 1 ปี</span>'
+        : `<b style="color:${days<=3?'var(--red)':days<=7?'var(--yellow)':'var(--text)'}">~${Math.max(1,Math.round(days))} วัน</b> <span style="color:var(--muted);font-size:11px">(${fmtD(r.eta)})</span>`;
+    }
+    out.push(`<tr><td><b>${gmH(b)}</b></td><td>${gmH(f.l)}</td><td class="mono">${num(r.v)}${u}</td>
+      <td class="mono">${r.slope<0?'−'+num(-r.slope)+u:'—'}</td><td class="mono">${r.mn!=null?num(r.mn)+u:'—'}</td><td>${res}</td></tr>`);
+  }));
+  if(empty.length) out.push(`<tr><td colspan="6" style="color:var(--muted);font-size:11px">ยังไม่มีข้อมูล: ${empty.map(gmH).join(', ')}</td></tr>`);
+  tb.innerHTML=out.join('');
 }
 
 
@@ -2022,6 +2732,7 @@ function renderForm(){
 
   // init thresholds hints
   updateTH('');
+  gmApplyQrPre();   // เลือกอาคาร/ชั้นจากลิงก์ QR (ถ้ามี)
 }
 
 function esc(s){ return String(s).replace(/[^a-zA-Z0-9ก-๙]/g,'_'); }
@@ -2110,7 +2821,7 @@ function selTgl(field,val,btn){
 function gmIsNum(sys,f,NUM){ return (SYS[sys]?.gen||SYS[sys]?.custom) ? f.t==='n' : (NUM.includes(f.k)||f.t==='n'); }
 
 function calcStatus(sys,bld,data){
-  const FAIL=/ผิดปกติ|ไม่สะอาด|ไม่ปกติ|ปิดรอซ่อม|ปิดชำรุด|ไม่มีเสียง/i;
+  const FAIL=GM_FAIL;
   let status='normal';
   if(SYS[sys]?.custom || SYS[sys]?.gen){
     // หัวข้อกำหนดจาก Admin → ผิดปกติเฉพาะตัวเลือกที่กำหนดไว้ในช่อง "ผิดปกติ"
@@ -3272,6 +3983,7 @@ function gmRenderSysUI(){
     s.value=gmSysKeys(true).includes(cur)?cur:'';
   });
   gmRenderSystems();
+  gmRenderDue();   // ระบบเปลี่ยน (เพิ่ม/ปิด/เปลี่ยนชื่อ) → รายการความถี่ตาม
 }
 
 function gmRenderSystems(){
