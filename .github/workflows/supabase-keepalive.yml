@@ -1,0 +1,25 @@
+# ป้องกัน Supabase (Free plan) pause — ping ฐานข้อมูลทุกวัน แม้ไม่มีใครเปิดแอป
+# วางไฟล์นี้ที่ .github/workflows/supabase-keepalive.yml ใน repo check-gas-system
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: '17 1 * * *'      # ทุกวัน 08:17 เวลาไทย (01:17 UTC)
+  workflow_dispatch:           # กดรันเองได้ที่แท็บ Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping GasMed database
+        run: |
+          URL="https://zapvkgypdyjxbsyppdzc.supabase.co/rest/v1/system_types?select=key&limit=1"
+          KEY="sb_publishable_lWy2cGxorUkoGSjOBtDDNw_bLqu7EWs"
+          for i in 1 2 3; do
+            code=$(curl -s -o /tmp/out.txt -w '%{http_code}' --max-time 30 "$URL" -H "apikey: $KEY")
+            echo "ครั้งที่ $i: HTTP $code"; cat /tmp/out.txt; echo
+            [ "$code" = "200" ] && exit 0
+            sleep 60
+          done
+          echo "::error::ping ไม่สำเร็จ — โปรเจกต์อาจถูก pause ให้เข้า Supabase Dashboard แล้วกด Restore"
+          exit 1
