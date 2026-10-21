@@ -218,6 +218,25 @@ tr:hover td{background:#f6faff}
 .admc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:12px}
 .admc h3{font-size:13px;font-weight:700;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--bg3)}
 
+/* Admin: เมนูย่อยซ้าย + หน้าละหัวข้อ (ถ้า JS เมนูไม่ทำงาน → ไม่มี .adm-paged การ์ดทุกใบแสดงเหมือนเดิม) */
+#pg-admin.on{display:grid;grid-template-columns:210px minmax(0,1fr);gap:16px;align-items:start}
+.adm-nav{position:sticky;top:0;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:8px;box-shadow:var(--sh)}
+.adm-g{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;padding:10px 8px 4px}
+.adm-g:first-child{padding-top:2px}
+.adm-i{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:6px;font:inherit;font-size:12.5px;color:var(--text);cursor:pointer}
+.adm-i:hover{background:var(--bg3)}
+.adm-i.on{background:var(--blue-lt);color:var(--blue);font-weight:600}
+.adm-i span:first-child{font-size:15px;width:20px;text-align:center}
+.adm-back{display:none;margin-bottom:10px}
+#pg-admin.adm-paged .admc:not(.adm-on){display:none}
+@media(max-width:768px){
+  #pg-admin.on{display:block}
+  #pg-admin.adm-open .adm-nav{display:none}
+  #pg-admin.adm-paged:not(.adm-open) .adm-main{display:none}
+  .adm-back{display:inline-flex}
+  .adm-i{padding:12px 10px;font-size:14px}
+}
+
 /* Admin Management Lists */
 .gm-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
 .gm-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)}
@@ -800,7 +819,10 @@ tr:hover td{background:#f6faff}
 
       <!-- ══ ADMIN ══ -->
       <div class="pg" id="pg-admin">
-        <div class="admc">
+        <nav class="adm-nav" id="adm-nav" aria-label="เมนู Admin"></nav>
+        <div class="adm-main">
+        <button class="btn btn-o btn-sm adm-back" onclick="admGo('')">← เมนู Admin</button>
+        <div class="admc" data-adm="pin">
           <h3>🔑 เปลี่ยน PIN บันทึกข้อมูล</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">ใช้ยืนยันก่อนบันทึกข้อมูลทุกครั้ง — ทุกเครื่องใช้รหัสนี้ร่วมกัน</p>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">
@@ -810,7 +832,7 @@ tr:hover td{background:#f6faff}
           </div>
         </div>
 
-        <div class="admc">
+        <div class="admc" data-adm="pin">
           <h3>🔧 เปลี่ยน PIN Admin</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">ใช้เข้าหน้า Admin เท่านั้น — แยกจาก PIN บันทึกข้อมูล</p>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">
@@ -819,12 +841,12 @@ tr:hover td{background:#f6faff}
             <div style="display:flex;align-items:flex-end"><button class="btn btn-o" onclick="chgAdminPin()">บันทึก PIN Admin ใหม่</button></div>
           </div>
         </div>
-        <div class="admc">
+        <div class="admc" data-adm="stats">
           <h3>📊 สถิติฐานข้อมูล</h3>
           <div id="adm-stats" style="color:var(--muted);font-size:13px">กำลังโหลด…</div>
         </div>
 
-        <div class="admc">
+        <div class="admc" data-adm="idx">
           <h3>⚡ SQL Index — เพิ่มความเร็ว</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">คัดลอก SQL ไปรันใน <a href="https://supabase.com/dashboard/project/zapvkgypdyjxbsyppdzc/sql" target="_blank" style="color:var(--blue)">Supabase SQL Editor</a></p>
           <pre id="idx-sql" style="background:var(--bg3);padding:12px;border-radius:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;cursor:pointer;line-height:1.6" onclick="copyIdx()" title="คลิกเพื่อคัดลอก">CREATE INDEX IF NOT EXISTS idx_ir_sys_date
@@ -844,7 +866,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
             <span id="idx-copied" style="font-size:11px;color:var(--green);display:none">✅ คัดลอกแล้ว!</span>
           </div>
         </div>
-                <div class="admc">
+                <div class="admc" data-adm="ping">
           <h3>🏓 ทดสอบการเชื่อมต่อ</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">กดเพื่อตรวจสอบว่า Supabase ยังเชื่อมต่อได้และวัด latency</p>
           <div style="display:flex;gap:10px;align-items:center">
@@ -853,7 +875,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
           </div>
           <p style="font-size:11px;color:var(--muted);margin-top:8px">💡 ระบบ auto-ping ทุก 6 ชั่วโมงอยู่แล้ว ป้องกัน Supabase Free Tier pause</p>
         </div>
-<div class="admc">
+<div class="admc" data-adm="archive">
           <h3>🗃️ Archive ข้อมูลเก่า</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">ย้ายข้อมูลที่เกินกำหนดไปยังตาราง archive</p>
           <div style="display:flex;gap:8px;align-items:center">
@@ -864,7 +886,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
         </div>
 
         <!-- ── ระบบ Gas ── -->
-        <div class="admc">
+        <div class="admc" data-adm="sys">
           <h3>⚙️ จัดการระบบ Gas</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
             เปลี่ยนชื่อ/ไอคอน, ปิด/เปิด, เลื่อนลำดับในเมนู และเพิ่มระบบใหม่พร้อมกำหนดหัวข้อตรวจเอง<br>
@@ -878,7 +900,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
         </div>
 
         <!-- ── ความถี่การตรวจ (ใช้กับ Dashboard "ไม่ได้ตรวจเกินกำหนด") ── -->
-        <div class="admc">
+        <div class="admc" data-adm="due">
           <h3>📅 ความถี่การตรวจ</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
             กำหนดว่าแต่ละระบบต้องตรวจอย่างน้อยทุกกี่วัน — จุดที่ไม่ได้ตรวจนานกว่านี้จะขึ้นใน Dashboard หัวข้อ "⏰ ไม่ได้ตรวจเกินกำหนด"
@@ -888,7 +910,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
         </div>
 
         <!-- ── ผู้ตรวจสอบ ── -->
-        <div class="admc">
+        <div class="admc" data-adm="insp">
           <h3>👤 จัดการรายชื่อผู้ตรวจสอบ</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">รายชื่อที่เพิ่มจะแสดงเป็น dropdown ให้เลือกในหน้าบันทึก (ยังพิมพ์เองได้)</p>
           <div class="gm-list" id="gm-insp-list"><div class="gm-empty">กำลังโหลด…</div></div>
@@ -900,7 +922,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
         </div>
 
         <!-- ── อาคาร/ถัง ── -->
-        <div class="admc">
+        <div class="admc" data-adm="bld">
           <h3>🏢 จัดการอาคาร/ถัง</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
             เพิ่มอาคารใหม่ในแต่ละระบบ — อาคารที่ปิดจะไม่แสดงในหน้าบันทึก<br>
@@ -924,7 +946,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
         </div>
 
         <!-- ── ชั้น/แผนก Area Alarm ── -->
-        <div class="admc">
+        <div class="admc" data-adm="floor">
           <h3>🚨 จัดการชั้น/แผนก Area Alarm</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">เพิ่ม/เปิดปิด/เลื่อน/ลบ ชั้นและแผนกในแต่ละอาคาร Area Alarm</p>
           <div class="gm-add-row" style="margin-bottom:8px">
@@ -940,7 +962,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
         </div>
 
         <!-- ── สำรองข้อมูล ── -->
-        <div class="admc">
+        <div class="admc" data-adm="backup">
           <h3>💾 สำรองข้อมูล</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:8px">
             ดาวน์โหลดข้อมูลทุกตารางเก็บไว้ (บันทึกการตรวจ, Archive, อาคาร/ชั้น, ผู้ตรวจ, ตั้งค่า) — ไม่รวม PIN<br>
@@ -955,7 +977,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
         </div>
 
         <!-- ── QR ต่อจุดตรวจ ── -->
-        <div class="admc">
+        <div class="admc" data-adm="qr">
           <h3>🔳 QR Code ต่อจุดตรวจ</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
             สร้างแผ่น QR ให้พิมพ์ติดที่จุดตรวจ — สแกนแล้วเปิดหน้าบันทึกของระบบ/อาคาร/ชั้นนั้นทันที (ยังต้องกรอก PIN บันทึกข้อมูลก่อนบันทึก)
@@ -967,6 +989,7 @@ CREATE INDEX IF NOT EXISTS idx_ir_sys_status
           </div>
           <div style="font-size:11px;color:var(--muted)">💡 จุดตรวจอ้างอิงจากอาคาร/ชั้นที่เปิดใช้งานในหน้านี้ — เพิ่มหรือเปลี่ยนชื่อแล้วต้องพิมพ์ QR ใหม่</div>
         </div>
+        </div><!-- /adm-main -->
       </div>
 
       <!-- รายงานรายเดือน -->
@@ -1426,6 +1449,7 @@ function openAdmin(){
     document.getElementById('tb-title').textContent='🔧 Admin';
     document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
     document.getElementById('ni-admin')?.classList.add('on');
+    admInit();
     loadAdminStats();
     await Promise.all([gmLoadAll(true), gmLoadSystems(), gmLoadDashCfg(true)]);   // ข้อมูลล่าสุด ป้องกันนำเข้าซ้ำเมื่อเครื่องอื่นนำเข้าไปแล้ว
     await gmAutoImport();   // นำเข้าค่าเริ่มต้นของกลุ่มที่ยังไม่เคยนำเข้า (ครั้งเดียว)
@@ -1770,6 +1794,55 @@ async function gmSaveDue(){
 // ════════════════════════════════════════════════════════
 //  สำรองข้อมูล / รายงานรายเดือน (PDF) / QR ต่อจุดตรวจ
 // ════════════════════════════════════════════════════════
+// ── Admin: เมนูย่อย (หน้าละหัวข้อ) ──
+const ADM_PAGES = [
+  {g:'ภาพรวม'},
+  {k:'stats',  ic:'📊', l:'สถิติฐานข้อมูล'},
+  {g:'ตั้งค่า'},
+  {k:'sys',    ic:'⚙️', l:'จัดการระบบ Gas'},
+  {k:'bld',    ic:'🏢', l:'อาคาร/ถัง'},
+  {k:'floor',  ic:'🚨', l:'ชั้น/แผนก Area Alarm'},
+  {k:'insp',   ic:'👤', l:'ผู้ตรวจสอบ'},
+  {k:'due',    ic:'📅', l:'ความถี่การตรวจ'},
+  {k:'qr',     ic:'🔳', l:'QR Code ต่อจุดตรวจ'},
+  {g:'ข้อมูลและฐานข้อมูล'},
+  {k:'backup', ic:'💾', l:'สำรองข้อมูล'},
+  {k:'archive',ic:'🗃️', l:'Archive ข้อมูลเก่า'},
+  {k:'ping',   ic:'🏓', l:'ทดสอบการเชื่อมต่อ'},
+  {k:'idx',    ic:'⚡', l:'SQL Index'},
+  {g:'ความปลอดภัย'},
+  {k:'pin',    ic:'🔑', l:'เปลี่ยน PIN'}
+];
+const ADM_K = 'gm_adm_page';
+const admMq = window.matchMedia('(max-width:768px)');
+
+function admInit(){
+  const nav=document.getElementById('adm-nav'), pg=document.getElementById('pg-admin'); if(!nav||!pg) return;
+  nav.innerHTML=ADM_PAGES.map(x=>x.g ? `<div class="adm-g">${x.g}</div>`
+    : `<button type="button" class="adm-i" data-k="${x.k}" onclick="admGo('${x.k}')"><span>${x.ic}</span><span>${x.l}</span></button>`).join('');
+  pg.classList.add('adm-paged');
+  admGo(admMq.matches ? '' : admStart());     // มือถือเริ่มที่รายการเมนู / จอใหญ่เปิดหน้าล่าสุด
+}
+function admStart(){
+  let last=''; try{ last=localStorage.getItem(ADM_K)||''; }catch(e){}
+  return ADM_PAGES.some(x=>x.k===last) ? last : ADM_PAGES.find(x=>x.k).k;
+}
+function admGo(k){
+  const pg=document.getElementById('pg-admin'); if(!pg) return;
+  pg.querySelectorAll('.admc[data-adm]').forEach(c=>c.classList.toggle('adm-on', c.dataset.adm===k));
+  document.querySelectorAll('#adm-nav .adm-i').forEach(b=>b.classList.toggle('on', b.dataset.k===k));
+  pg.classList.toggle('adm-open', !!k);
+  if(k){
+    try{ localStorage.setItem(ADM_K,k); }catch(e){}
+    const c=document.querySelector('.content'); if(c) c.scrollTop=0;
+  }
+}
+// ย่อ→ขยายหน้าจอระหว่างอยู่หน้าเมนูบนมือถือ → จอใหญ่ต้องมีหน้าแสดงเสมอ
+admMq.addEventListener('change',()=>{
+  const pg=document.getElementById('pg-admin');
+  if(!admMq.matches && pg && pg.classList.contains('adm-paged') && !pg.classList.contains('adm-open')) admGo(admStart());
+});
+
 const GM_BK_KEY = 'gm_last_backup';
 // ตารางที่สำรอง — gm_config ไม่รวม PIN (ไม่ให้รหัสไปอยู่ในไฟล์สำรอง)
 const GM_BK_TABLES = [
